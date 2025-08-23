@@ -50,6 +50,9 @@ The platform consists of 15 core microservices organized by domain:
 
 ### Backend (.NET 9)
 ```bash
+# Navigate to backend directory
+cd backend/
+
 # Build all services
 dotnet build
 
@@ -69,6 +72,9 @@ dotnet ef database update --project src/Services/User.API
 
 ### Frontend (NextJS 15)
 ```bash
+# Navigate to frontend directory
+cd frontend/
+
 # Install dependencies
 npm ci
 
@@ -87,14 +93,18 @@ npx playwright test
 
 ### Infrastructure
 ```bash
-# Start local development environment
-docker-compose -f docker-compose.dev.yml up -d
+# Start local development environment from root
+docker-compose -f infrastructure/docker/docker-compose.dev.yml up -d
 
 # Start test environment
-docker-compose -f docker-compose.test.yml up -d
+docker-compose -f infrastructure/docker/docker-compose.test.yml up -d
 
 # View logs
-docker-compose logs -f [service-name]
+docker-compose -f infrastructure/docker/docker-compose.dev.yml logs -f [service-name]
+
+# For convenience, you can also use from infrastructure/docker directory:
+cd infrastructure/docker/
+docker-compose -f docker-compose.dev.yml up -d
 ```
 
 ## Testing Strategy
