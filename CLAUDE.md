@@ -9,12 +9,42 @@ This is a Facebook Marketplace-style auction platform built with a microservice 
 **Tech Stack:**
 - Backend: .NET 9 microservices with Domain-Driven Design (DDD)
 - Frontend: NextJS 15 with App Router (mobile-responsive)
+- Mobile: React Native (future implementation)
 - Authentication: Keycloak with social login integration
 - Database: PostgreSQL 17 with PostGIS for geospatial features
 - Real-time: SignalR for live bidding and messaging
 - Caching: Redis
 - Search: Elasticsearch
 - Testing: 100% test coverage using TDD methodology
+
+## Repository Structure
+
+```
+/
+├── backend/                # .NET 9 microservices
+│   ├── src/               # Source code
+│   │   ├── Services/      # Individual microservices
+│   │   ├── Shared/        # Shared libraries
+│   │   └── ApiGateway/    # API gateway
+│   ├── tests/             # Test projects
+│   └── Marketplace.sln
+│
+├── frontend/              # NextJS 15 web app
+│   ├── src/              # Source code
+│   ├── tests/            # Test files
+│   └── package.json
+│
+├── mobile/               # React Native app (future)
+│
+├── infrastructure/       # Infrastructure as Code
+│   ├── docker/          # Docker configurations
+│   ├── kubernetes/      # K8s manifests
+│   └── scripts/         # Utility scripts
+│
+└── shared/              # Cross-platform shared code
+    ├── contracts/       # API contracts
+    └── types/          # TypeScript definitions
+```
 
 ## Architecture
 
@@ -50,6 +80,9 @@ The platform consists of 15 core microservices organized by domain:
 
 ### Backend (.NET 9)
 ```bash
+# Navigate to backend directory
+cd backend/
+
 # Build all services
 dotnet build
 
@@ -69,6 +102,9 @@ dotnet ef database update --project src/Services/User.API
 
 ### Frontend (NextJS 15)
 ```bash
+# Navigate to frontend directory
+cd frontend/
+
 # Install dependencies
 npm ci
 
@@ -87,14 +123,18 @@ npx playwright test
 
 ### Infrastructure
 ```bash
-# Start local development environment
-docker-compose -f docker-compose.dev.yml up -d
+# Start local development environment from root
+docker-compose -f infrastructure/docker/docker-compose.dev.yml up -d
 
 # Start test environment
-docker-compose -f docker-compose.test.yml up -d
+docker-compose -f infrastructure/docker/docker-compose.test.yml up -d
 
 # View logs
-docker-compose logs -f [service-name]
+docker-compose -f infrastructure/docker/docker-compose.dev.yml logs -f [service-name]
+
+# For convenience, you can also use from infrastructure/docker directory:
+cd infrastructure/docker/
+docker-compose -f docker-compose.dev.yml up -d
 ```
 
 ## Testing Strategy
