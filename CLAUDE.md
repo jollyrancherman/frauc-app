@@ -9,12 +9,42 @@ This is a Facebook Marketplace-style auction platform built with a microservice 
 **Tech Stack:**
 - Backend: .NET 9 microservices with Domain-Driven Design (DDD)
 - Frontend: NextJS 15 with App Router (mobile-responsive)
+- Mobile: React Native (future implementation)
 - Authentication: Keycloak with social login integration
 - Database: PostgreSQL 17 with PostGIS for geospatial features
 - Real-time: SignalR for live bidding and messaging
 - Caching: Redis
 - Search: Elasticsearch
 - Testing: 100% test coverage using TDD methodology
+
+## Repository Structure
+
+```
+/
+├── backend/                # .NET 9 microservices
+│   ├── src/               # Source code
+│   │   ├── Services/      # Individual microservices
+│   │   ├── Shared/        # Shared libraries
+│   │   └── ApiGateway/    # API gateway
+│   ├── tests/             # Test projects
+│   └── Marketplace.sln
+│
+├── frontend/              # NextJS 15 web app
+│   ├── src/              # Source code
+│   ├── tests/            # Test files
+│   └── package.json
+│
+├── mobile/               # React Native app (future)
+│
+├── infrastructure/       # Infrastructure as Code
+│   ├── docker/          # Docker configurations
+│   ├── kubernetes/      # K8s manifests
+│   └── scripts/         # Utility scripts
+│
+└── shared/              # Cross-platform shared code
+    ├── contracts/       # API contracts
+    └── types/          # TypeScript definitions
+```
 
 ## Architecture
 

@@ -28,6 +28,67 @@
 **Testing**: 100% test coverage with TDD methodology  
 **Duration**: 14 weeks (7 sections, 2 weeks each)  
 
+### 📊 Current Progress
+**Current Phase**: Week 1, Day 1-2 - Infrastructure & TDD Setup  
+**Branch**: `feature/week1-day1-2-infrastructure`  
+**Status**: 🟡 In Progress
+
+**Completed Milestones**:
+- ✅ Project structure created with frontend/backend/mobile/infrastructure separation
+- ✅ Docker Compose configuration for all services
+- ✅ Backend CLAUDE.md documentation created
+- ✅ PostGIS initialization scripts prepared
+
+**Next Steps**:
+- 🔄 Start Week 1, Day 3-5: User Profile Service (TDD)
+- ⏳ Write failing unit tests for User domain
+- ⏳ User aggregate with EF Core implementation
+- ⏳ Keycloak JWT integration
+
+### 📁 Project Structure
+```
+frauc-marketplace/
+├── backend/                # All .NET 9 microservices
+│   ├── src/
+│   │   ├── Services/       # Individual microservices
+│   │   ├── Shared/         # Shared libraries, domain models
+│   │   └── ApiGateway/     # Ocelot API gateway
+│   ├── tests/              # All backend tests
+│   └── Marketplace.sln     # Main solution file
+│
+├── frontend/               # NextJS 15 web application
+│   ├── src/
+│   ├── public/
+│   ├── tests/
+│   └── package.json
+│
+├── mobile/                 # React Native app (future)
+│   ├── src/
+│   ├── ios/
+│   ├── android/
+│   └── package.json
+│
+├── infrastructure/         # Infrastructure as Code
+│   ├── docker/            # Docker configurations
+│   ├── kubernetes/        # K8s manifests
+│   ├── terraform/         # Cloud infrastructure
+│   └── scripts/           # Utility scripts
+│
+├── shared/                # Cross-platform shared code
+│   ├── contracts/         # API contracts, DTOs
+│   ├── types/            # TypeScript type definitions
+│   └── constants/        # Shared constants
+│
+├── docs/                  # Documentation
+│   ├── api/              # API documentation
+│   ├── architecture/     # Architecture decisions
+│   └── guides/           # Development guides
+│
+└── .github/              # GitHub specific
+    ├── workflows/        # CI/CD pipelines
+    └── ISSUE_TEMPLATE/
+```
+
 ---
 
 ## 📋 Development Approach: Vertical Slices
@@ -36,12 +97,13 @@
 **Goal**: Complete user authentication and profile management
 
 #### Week 1: Backend Foundation
-- [x] **Day 1-2: Infrastructure & TDD Setup**
+- [x] **Day 1-2: Infrastructure & TDD Setup** (Completed)
   - [x] Docker Compose: Keycloak + PostgreSQL 17 + Redis
   - [x] .NET 9 solution with DDD structure
   - [x] xUnit test projects for all services
   - [x] TestContainers setup for integration tests
   - [x] Keycloak realm configuration (users, sellers, admins)
+
   - [x] GitHub repository setup with CI/CD workflows
   - [x] **Test Coverage Target**: Infrastructure tests 100%
 
@@ -435,7 +497,7 @@
 ### Development Environment
 **Local Setup**:
 ```yaml
-# docker-compose.dev.yml
+# infrastructure/docker/docker-compose.dev.yml
 services:
   keycloak:
     image: keycloak/keycloak:26.0
@@ -478,7 +540,7 @@ services:
 ### Test Environment
 **Automated Testing Setup**:
 ```yaml
-# docker-compose.test.yml
+# infrastructure/docker/docker-compose.test.yml
 services:
   postgres-test:
     image: postgres:17
@@ -784,11 +846,11 @@ Each 2-week section includes:
 
 ### First Week Setup
 1. **Clone and setup repository structure**
-2. **Configure Docker Compose for local development**
+2. **Configure Docker Compose in infrastructure/docker/**
 3. **Setup Keycloak with initial realm configuration**
-4. **Create .NET solution with test projects**
-5. **Initialize NextJS project with testing setup**
-6. **Configure CI/CD pipeline basics**
+4. **Create .NET solution in backend/ with test projects**
+5. **Initialize NextJS project in frontend/ with testing setup**
+6. **Configure CI/CD pipeline in .github/workflows/**
 7. **Setup project board and tracking tools**
 
 ### Development Workflow
