@@ -5,7 +5,6 @@ using Marketplace.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using User.API.Application.Behaviors;
 
 namespace User.API.Extensions;
@@ -40,24 +39,25 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddAuthenticationServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var jwtSettings = configuration.GetSection("JwtSettings");
-        var issuer = jwtSettings["Issuer"] ?? throw new InvalidOperationException("JWT Issuer is not configured");
-        var audience = jwtSettings["Audience"] ?? throw new InvalidOperationException("JWT Audience is not configured");
-        var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is not configured");
+        var keycloakSettings = configuration.GetSection("Keycloak");
+        var authority = keycloakSettings["Authority"] ?? throw new InvalidOperationException("Keycloak Authority is not configured");
+        var audience = keycloakSettings["Audience"] ?? throw new InvalidOperationException("Keycloak Audience is not configured");
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
+                options.Authority = authority;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = issuer,
+                    ValidIssuer = authority,
                     ValidAudience = audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+                    ClockSkew = TimeSpan.FromSeconds(30)
                 };
+                options.RequireHttpsMetadata = false; // For development only
             });
 
         services.AddAuthorization();

@@ -1,66 +1,109 @@
 version: '3.8'
 
 services:
+  # Authentication Service
   keycloak:
     image: keycloak/keycloak:26.0
-    container_name: marketplace-keycloak-dev
+    container_name: marketplace-keycloak
     environment:
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=admin123
-      - KC_DB=postgres
-      - KC_DB_URL=jdbc:postgresql://postgres:5432/keycloak
-      - KC_DB_USERNAME=keycloak_user
-      - KC_DB_PASSWORD=keycloak_pass
-      - KC_HOSTNAME=localhost
-    command: start-dev
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak123
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
+      keycloak-postgres:
+        condition: service_healthy
+    command: start-dev
     networks:
       - marketplace-network
 
-  postgres:
-    image: postgis/postgis:17-3.4
-    container_name: marketplace-postgres-dev
+  # Keycloak Database
+  keycloak-postgres:
+    image: postgres:17-alpine
+    container_name: keycloak-postgres
     environment:
-      - POSTGRES_DB=marketplace_dev
-      - POSTGRES_USER=marketplace_user
-      - POSTGRES_PASSWORD=marketplace_pass
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak123
+    volumes:
+      - keycloak_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - marketplace-network
+
+  # Main Application Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: marketplace-postgres
+    environment:
+      POSTGRES_DB: marketplace_dev
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_pass123
     ports:
       - "5432:5432"
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
-      - ./init-scripts:/docker-entrypoint-initdb.d
+      - ../scripts/init-postgis.sql:/docker-entrypoint-initdb.d/init-postgis.sql
+    command: postgres -c shared_preload_libraries=pg_stat_statements
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev_user -d marketplace_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - marketplace-network
 
-  keycloak-postgres:
-    image: postgres:17
-    container_name: keycloak-postgres-dev
+  # PostGIS Extension Setup
+  postgis:
+    image: postgis/postgis:17-3.5-alpine
+    container_name: marketplace-postgis
     environment:
-      - POSTGRES_DB=keycloak
-      - POSTGRES_USER=keycloak_user
-      - POSTGRES_PASSWORD=keycloak_pass
+      POSTGRES_DB: marketplace_dev
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_pass123
+    ports:
+      - "5433:5432"
     volumes:
-      - keycloak_postgres_data:/var/lib/postgresql/data
+      - postgis_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev_user -d marketplace_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - marketplace-network
 
+  # Redis for Caching and SignalR Backplane
   redis:
     image: redis:7-alpine
-    container_name: marketplace-redis-dev
+    container_name: marketplace-redis
     ports:
       - "6379:6379"
     volumes:
       - redis_dev_data:/data
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --requirepass redis123
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis123", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - marketplace-network
 
+  # Elasticsearch for Search
   elasticsearch:
     image: elasticsearch:8.15.0
-    container_name: marketplace-elasticsearch-dev
+    container_name: marketplace-elasticsearch
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -70,14 +113,55 @@ services:
       - "9300:9300"
     volumes:
       - elasticsearch_dev_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - marketplace-network
+
+  # Kibana for Elasticsearch Management
+  kibana:
+    image: kibana:8.15.0
+    container_name: marketplace-kibana
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - marketplace-network
+
+  # RabbitMQ for Message Queue
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: marketplace-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_dev_data:/var/lib/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
     networks:
       - marketplace-network
 
 volumes:
-  postgres_dev_data:
   keycloak_postgres_data:
+  postgres_dev_data:
+  postgis_dev_data:
   redis_dev_data:
   elasticsearch_dev_data:
+  rabbitmq_dev_data:
 
 networks:
   marketplace-network:

@@ -1,20 +1,49 @@
 version: '3.8'
 
 services:
+  # Test Database
   postgres-test:
-    image: postgis/postgis:17-3.4
+    image: postgres:17-alpine
     container_name: marketplace-postgres-test
     environment:
-      - POSTGRES_DB=marketplace_test
-      - POSTGRES_USER=test_user
-      - POSTGRES_PASSWORD=test_pass
+      POSTGRES_DB: marketplace_test
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_pass123
     ports:
-      - "5433:5432"
+      - "5434:5432"
     tmpfs:
       - /var/lib/postgresql/data
+    command: postgres -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d marketplace_test"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
     networks:
-      - marketplace-test-network
+      - test-network
 
+  # Test PostGIS Database
+  postgis-test:
+    image: postgis/postgis:17-3.5-alpine
+    container_name: marketplace-postgis-test
+    environment:
+      POSTGRES_DB: marketplace_test
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_pass123
+    ports:
+      - "5435:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    command: postgres -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d marketplace_test"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    networks:
+      - test-network
+
+  # Test Redis
   redis-test:
     image: redis:7-alpine
     container_name: marketplace-redis-test
@@ -22,9 +51,16 @@ services:
       - "6380:6379"
     tmpfs:
       - /data
+    command: redis-server --save ""
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
     networks:
-      - marketplace-test-network
+      - test-network
 
+  # Test Elasticsearch
   elasticsearch-test:
     image: elasticsearch:8.15.0
     container_name: marketplace-elasticsearch-test
@@ -32,13 +68,37 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+      - path.data=/tmp/elasticsearch-data
     ports:
       - "9201:9200"
     tmpfs:
-      - /usr/share/elasticsearch/data
+      - /tmp/elasticsearch-data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     networks:
-      - marketplace-test-network
+      - test-network
+
+  # Test Keycloak (for integration tests)
+  keycloak-test:
+    image: keycloak/keycloak:26.0
+    container_name: marketplace-keycloak-test
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KC_DB: h2-file
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+    ports:
+      - "8081:8080"
+    command: start-dev
+    tmpfs:
+      - /opt/keycloak/data
+    networks:
+      - test-network
 
 networks:
-  marketplace-test-network:
+  test-network:
     driver: bridge
