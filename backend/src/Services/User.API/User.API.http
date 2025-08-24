@@ -1,0 +1,20 @@
+@User.API_HostAddress = http://localhost:5001
+
+### Create User
+POST {{User.API_HostAddress}}/api/users
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "username": "johndoe",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+
+###
+
+### Get User by ID
+GET {{User.API_HostAddress}}/api/users/00000000-0000-0000-0000-000000000000
+Authorization: Bearer your-jwt-token-here
+
+###

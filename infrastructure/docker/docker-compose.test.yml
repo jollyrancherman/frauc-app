@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  postgres-test:
+    image: postgis/postgis:17-3.4
+    container_name: marketplace-postgres-test
+    environment:
+      - POSTGRES_DB=marketplace_test
+      - POSTGRES_USER=test_user
+      - POSTGRES_PASSWORD=test_pass
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    networks:
+      - marketplace-test-network
+
+  redis-test:
+    image: redis:7-alpine
+    container_name: marketplace-redis-test
+    ports:
+      - "6380:6379"
+    tmpfs:
+      - /data
+    networks:
+      - marketplace-test-network
+
+  elasticsearch-test:
+    image: elasticsearch:8.15.0
+    container_name: marketplace-elasticsearch-test
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+    ports:
+      - "9201:9200"
+    tmpfs:
+      - /usr/share/elasticsearch/data
+    networks:
+      - marketplace-test-network
+
+networks:
+  marketplace-test-network:
+    driver: bridge
