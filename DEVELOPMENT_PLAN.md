@@ -107,22 +107,22 @@ frauc-marketplace/
   - [x] GitHub repository setup with CI/CD workflows
   - [x] **Test Coverage Target**: Infrastructure tests 100%
 
-- [ ] **Day 3-5: User Profile Service (TDD)**
-  - [ ] **RED**: Write failing unit tests for User domain
-  - [ ] **GREEN**: User aggregate with EF Core implementation
-  - [ ] **REFACTOR**: Clean up User service with CQRS pattern
-  - [ ] Keycloak JWT integration with comprehensive auth tests
-  - [ ] User profile CRUD with full test coverage
-  - [ ] **Test Coverage Target**: User Service 100%
+- [x] **Day 3-5: User Profile Service (TDD)** (Completed)
+  - [x] **RED**: Write failing unit tests for User domain
+  - [x] **GREEN**: User aggregate with EF Core implementation
+  - [x] **REFACTOR**: Clean up User service with CQRS pattern
+  - [x] Keycloak JWT integration with comprehensive auth tests
+  - [x] User profile CRUD with full test coverage
+  - [x] **Test Coverage Target**: User Service 100%
 
 **Week 1 Deliverables**:
 - ✅ Complete development infrastructure setup
 - ✅ GitHub repository with CI/CD workflows
 - ✅ Docker development environment ready
 - ✅ .NET 9 microservices architecture foundation
-- [ ] Working authentication backend (Days 3-5)
-- [ ] 100% test coverage for auth components (Days 3-5)
-- [ ] Integration tests with TestContainers (Days 3-5)
+- ✅ Working authentication backend (Days 3-5)
+- ✅ 100% test coverage for auth components (Days 3-5)
+- ✅ Integration tests with TestContainers (Days 3-5)
 
 #### Week 2: Frontend Integration
 - [ ] **Day 1-3: NextJS 15 TDD Setup**
