@@ -259,3 +259,40 @@ Key metrics to monitor:
 - Efficient bid processing with concurrency handling
 - Background services for auction lifecycle management
 - Load testing validation for high-traffic scenarios
+
+## Git Workflow and Commit Guidelines
+
+### Commit Strategy
+Follow the "one commit per logical component" approach:
+- Each commit represents a complete, working feature
+- All commits must build and pass tests
+- Maintain 100% test coverage for touched code
+
+### Commit Message Format
+```
+type(scope): subject
+
+body (optional)
+
+footer (optional)
+```
+
+**Types**: feat, fix, test, refactor, docs, style, perf, chore
+
+### Daily Workflow
+1. Write tests first (RED phase)
+2. Implement minimal code to pass (GREEN phase)
+3. Refactor while maintaining tests (REFACTOR phase)
+4. Commit when tests pass with descriptive message
+5. Push at end of each day or major milestone
+
+### Branch Naming
+- `feature/week{N}-{description}` for weekly sprints
+- `bugfix/{issue-number}-{description}` for bug fixes
+- `hotfix/{description}` for emergency fixes
+
+### Pull Request Guidelines
+- Create PR at end of each week/sprint
+- Include test results and coverage report
+- Reference any related issues
+- Request review before merging

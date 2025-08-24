@@ -296,6 +296,71 @@ dotnet ef migrations script --project src/Services/User.API
 5. **Rate limiting** - Implement per-user rate limiting
 6. **CORS configuration** - Configure appropriately for frontend
 
+## Backend Commit Strategy
+
+### Commit Granularity for Services
+
+When implementing a new microservice, follow this commit pattern:
+
+#### Day 1: Domain Layer
+```bash
+git commit -m "feat: Add [Service] aggregate with business rules"
+git commit -m "feat: Add [Service] value objects and domain events"
+git commit -m "test: Add [Service] domain unit tests"
+```
+
+#### Day 2: Application Layer
+```bash
+git commit -m "feat: Add [Service] CQRS commands and handlers"
+git commit -m "feat: Add [Service] queries and projections"
+git commit -m "test: Add [Service] application layer tests"
+```
+
+#### Day 3: Infrastructure Layer
+```bash
+git commit -m "feat: Add [Service] repository with EF Core"
+git commit -m "feat: Add [Service] database migrations"
+git commit -m "test: Add [Service] integration tests with TestContainers"
+```
+
+#### Day 4: API Layer
+```bash
+git commit -m "feat: Add [Service] API controller with endpoints"
+git commit -m "feat: Add [Service] OpenAPI documentation"
+git commit -m "test: Add [Service] API integration tests"
+```
+
+### Testing Requirements Per Commit
+- Domain commits: Include unit tests in same commit
+- Application commits: Include handler tests
+- Infrastructure commits: Include integration tests
+- API commits: Include controller and E2E tests
+- **Target**: 100% coverage for new code in each commit
+
+### Example Week 2 Commits (Product & Listing)
+```bash
+# Day 1
+feat: Add Product aggregate with specifications pattern
+feat: Add Category aggregate with hierarchical structure
+
+# Day 2
+feat: Add Product CQRS commands and handlers
+feat: Add Product search queries with filtering
+
+# Day 3
+feat: Add Product repository with EF Core
+feat: Add Elasticsearch product indexing
+
+# Day 4
+feat: Add Listing aggregate with auction types
+feat: Add Listing CQRS operations
+
+# Day 5
+feat: Add Products API controller
+feat: Add Listings API controller
+feat: Add PostGIS geospatial search
+```
+
 ## Getting Started Checklist
 
 When creating a new service:
