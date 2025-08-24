@@ -225,73 +225,74 @@ footer (optional)
 
 ---
 
-### Section 2: Product & Listing Services (Weeks 2-3)
-**Goal**: Product catalog and listing management with geospatial features
+### Section 2: Item & Listing Services (Weeks 2-3)
+**Goal**: Item and listing management with 5 listing types and geospatial features
 
-#### Week 2: Product & Listing Backend (TDD) 🚧 **CURRENT SPRINT**
-- [ ] **Day 1: Product Domain (TDD)**
-  - [ ] **Morning**: Product aggregate with specifications pattern
+#### Week 2: Item & Listing Backend (TDD) 🚧 **CURRENT SPRINT**
+- [ ] **Day 1: Item & Category Domain (TDD)**
+  - [ ] **Morning**: Item aggregate with image management
   - [ ] **Afternoon**: Category aggregate with hierarchical structure
-  - [ ] **Commit 1**: `feat: Add Product aggregate with specifications pattern`
+  - [ ] **Commit 1**: `feat: Add Item aggregate with image management`
   - [ ] **Commit 2**: `feat: Add Category aggregate with hierarchical structure`
   - [ ] **Test Coverage Target**: Domain layer 100%
 
-- [ ] **Day 2: Product Application Layer (TDD)**
-  - [ ] **Morning**: Product CQRS commands (Create, Update, Delete)
-  - [ ] **Afternoon**: Product queries (GetById, Search, Filter)
-  - [ ] **Commit 3**: `feat: Add Product CQRS commands and handlers`
-  - [ ] **Commit 4**: `feat: Add Product search queries with filtering`
+- [ ] **Day 2: Item Application Layer (TDD)**
+  - [ ] **Morning**: Item CQRS commands (Create, Update, AddImage)
+  - [ ] **Afternoon**: Item queries (GetById, GetBySeller, GetByCategory)
+  - [ ] **Commit 3**: `feat: Add Item CQRS commands and handlers`
+  - [ ] **Commit 4**: `feat: Add Item queries with category filtering`
   - [ ] **Test Coverage Target**: Application layer 100%
 
-- [ ] **Day 3: Product Infrastructure (TDD)**
-  - [ ] **Morning**: Product repository with EF Core
-  - [ ] **Afternoon**: Elasticsearch product indexing
-  - [ ] **Commit 5**: `feat: Add Product repository with EF Core`
-  - [ ] **Commit 6**: `feat: Add Elasticsearch product indexing`
+- [ ] **Day 3: Item Infrastructure & Listing Domain (TDD)**
+  - [ ] **Morning**: Item repository with EF Core
+  - [ ] **Afternoon**: Listing aggregate with 5 types and PostGIS location
+  - [ ] **Commit 5**: `feat: Add Item repository with EF Core`
+  - [ ] **Commit 6**: `feat: Add Listing aggregate with 5 types and PostGIS location`
   - [ ] **Test Coverage Target**: Infrastructure layer 100%
 
-- [ ] **Day 4: Listing Domain & Application (TDD)**
-  - [ ] **Morning**: Listing aggregate with auction types
-  - [ ] **Afternoon**: Listing CQRS operations
-  - [ ] **Commit 7**: `feat: Add Listing aggregate with auction types`
-  - [ ] **Commit 8**: `feat: Add Listing CQRS operations`
+- [ ] **Day 4: Listing Application & Infrastructure (TDD)**
+  - [ ] **Morning**: Listing CQRS with 5 listing type support
+  - [ ] **Afternoon**: PostGIS spatial queries for location-based search
+  - [ ] **Commit 7**: `feat: Add Listing CQRS with 5 listing type support`
+  - [ ] **Commit 8**: `feat: Add PostGIS spatial queries for location-based search`
   - [ ] **Test Coverage Target**: Listing domain/app 100%
 
-- [ ] **Day 5: API & Integration (TDD)**
-  - [ ] **Morning**: Products and Listings API controllers
-  - [ ] **Afternoon**: PostGIS geospatial search integration
-  - [ ] **Commit 9**: `feat: Add Products API controller`
-  - [ ] **Commit 10**: `feat: Add Listings API controller`
-  - [ ] **Commit 11**: `feat: Add PostGIS geospatial search`
+- [ ] **Day 5: API & Todo Service Integration (TDD)**
+  - [ ] **Morning**: Items and Listings API controllers with spatial search
+  - [ ] **Afternoon**: Todo Service with Redis caching and event-driven updates
+  - [ ] **Commit 9**: `feat: Add Items API controller with image upload`
+  - [ ] **Commit 10**: `feat: Add Listings API controller with PostGIS search`
+  - [ ] **Commit 11**: `feat: Add Todo Service with Redis caching and event-driven updates`
   - [ ] **Test Coverage Target**: API layer 100%
 
 **Week 2 Deliverables**:
-- ✅ Complete Product and Listing services backend
+- ✅ Complete Item and Listing services backend with 5 listing types
 - ✅ 100% test coverage across all layers
-- ✅ Elasticsearch and PostGIS integration
-- ✅ ~11-12 focused commits following Git strategy
+- ✅ PostGIS spatial search and Todo Service integration
+- ✅ ~11 focused commits following Git strategy
 
-#### Week 3: Listing Frontend (Component TDD)
-- [ ] **Day 1-3: Create Listing Flow**
-  - [ ] **RED**: Multi-step wizard component tests
-  - [ ] **GREEN**: Listing creation with form validation
+#### Week 3: Item & Listing Frontend (Component TDD)
+- [ ] **Day 1-3: Create Item & Listing Flow**
+  - [ ] **RED**: Multi-step wizard component tests for 5 listing types
+  - [ ] **GREEN**: Item creation with listing type selection
   - [ ] **REFACTOR**: Reusable form components
   - [ ] Image upload with drag-and-drop tests
-  - [ ] Geographic location picker tests
+  - [ ] Geographic location picker with PostGIS integration
   - [ ] **Test Coverage Target**: Creation flow 100%
 
-- [ ] **Day 4-5: Browse & View Listings**
-  - [ ] **RED**: Listing grid and detail component tests
-  - [ ] **GREEN**: Infinite scroll with filtering
+- [ ] **Day 4-5: Browse & View Items/Listings**
+  - [ ] **RED**: Listing grid component tests with 5 types
+  - [ ] **GREEN**: Location-based search with radius selection
   - [ ] **REFACTOR**: Optimized listing components
-  - [ ] SEO optimization with meta tag tests
+  - [ ] Todo dashboard components (web prominent, mobile stats)
   - [ ] Mobile responsiveness tests
   - [ ] **Test Coverage Target**: Browse/view 100%
 
-**Week 4 Deliverables**:
-- ✅ Complete listing CRUD experience
+**Week 3 Deliverables**:
+- ✅ Complete item/listing CRUD experience with 5 types
+- ✅ Location-based search with PostGIS
+- ✅ Todo management interface
 - ✅ 100% frontend test coverage
-- ✅ SEO and performance optimized
 
 ---
 

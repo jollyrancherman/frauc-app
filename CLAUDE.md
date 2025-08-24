@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Facebook Marketplace-style auction platform built with a microservice architecture. The platform supports both forward auctions (highest bidder wins) and reverse auctions (lowest bidder wins), along with fixed-price listings.
+This is a Facebook Marketplace-style auction platform built with a microservice architecture. The platform supports 5 distinct listing types: FREE (30-day giveaways), FREE-to-AUCTION (converts on first bid), AUCTION (forward auction), REVERSE AUCTION (lowest bidder wins), and FOR SALE (fixed price).
 
 **Tech Stack:**
 - Backend: .NET 9 microservices with Domain-Driven Design (DDD)
@@ -52,13 +52,14 @@ This is a Facebook Marketplace-style auction platform built with a microservice 
 The platform consists of 15 core microservices organized by domain:
 
 **Core Business Services:**
-- User Service (profiles, ratings, verification)
-- Product Service (catalog, categories, specifications)
-- Listing Service (auctions, fixed-price listings)
+- User Service (profiles, trust scoring, verification)
+- Item Service (individual items with images and condition)
+- Listing Service (5 listing types with PostGIS location data)
 - Bidding Service (bid management, auto-bidding, proxy bidding)
 - Payment Service (Stripe integration, escrow, commission tracking)
-- Messaging Service (SignalR real-time chat)
-- Geolocation Service (PostGIS spatial queries)
+- Messaging Service (SignalR real-time chat - direct and listing-scoped)
+- Todo Service (separate bounded context with Redis caching)
+- Geolocation Service (PostGIS spatial queries for buyer radius search)
 
 **Platform Services:**
 - Search Service (Elasticsearch integration)
@@ -88,6 +89,9 @@ dotnet build
 
 # Run specific service with hot reload
 dotnet watch --project src/Services/User.API
+dotnet watch --project src/Services/Item.API
+dotnet watch --project src/Services/Listing.API
+dotnet watch --project src/Services/Todo.API
 
 # Run all tests with coverage
 dotnet test --collect:"XPlat Code Coverage"
@@ -175,7 +179,8 @@ Keycloak realms configured for:
 
 ### Database Strategy
 - PostgreSQL 17 as primary database with PostGIS for geospatial queries
-- JSONB columns for flexible product attributes and metadata
+- PostGIS spatial columns for listing location and radius-based search
+- JSONB columns for flexible item attributes and metadata
 - Table partitioning for bid history and analytics data
 - Row Level Security for multi-tenant data isolation
 
@@ -296,3 +301,53 @@ footer (optional)
 - Include test results and coverage report
 - Reference any related issues
 - Request review before merging
+
+## Business Logic & App-Specific Guidance
+
+### 5 Listing Types Implementation
+When implementing listing functionality, ensure proper handling of:
+1. **FREE**: 30-day expiration, no payment processing
+2. **FREE-to-AUCTION**: State transition on first bid placement
+3. **AUCTION**: Real-time bidding with SignalR updates
+4. **REVERSE AUCTION**: Sellers compete, buyer accepts lowest
+5. **FOR SALE**: Fixed price with immediate purchase
+
+### Item vs Listing Relationship
+- **Critical**: Items do NOT have location data
+- **Critical**: Listings have PostGIS location for spatial search
+- **1:1 Relationship**: Each Item has exactly one Listing (not a product catalog)
+- Items contain: title, description, images, condition, category
+- Listings contain: item reference, listing type, price, location, duration
+
+### Trust Score System (100-point scale)
+- New users start at 50 points
+- Positive actions: +1 to +5 points
+- Negative actions: -1 to -50 points
+- Scores affect search ranking and user privileges
+- Real-time score updates after each transaction
+
+### Todo System Architecture
+- **Separate Bounded Context**: TodoService isolated for performance
+- **Redis Caching**: Fast access to user todo lists
+- **Event-Driven**: Todos generated from listing lifecycle events
+- **Urgency Levels**: URGENT (red), HIGH (orange), MEDIUM (yellow), LOW (green)
+- **Platform Display**: Web prominent, mobile dashboard stats
+
+### Geographic Features
+- **Buyer-Controlled Search**: Buyers set radius preferences (1-100km)
+- **PostGIS Integration**: Efficient spatial queries for location filtering
+- **Privacy Protection**: Approximate locations until transaction commitment
+- All spatial data stored in Listings table, not Items
+
+### Communication System
+- **Direct Messaging**: Private 1:1 conversations via SignalR
+- **Listing-Scoped**: Public Q&A visible to all potential buyers
+- **Real-time Updates**: SignalR hubs for instant message delivery
+- **Content Moderation**: Automated filtering for inappropriate content
+
+### Testing Requirements for Business Logic
+- Test all 5 listing type state transitions
+- Test PostGIS spatial queries with various radius values
+- Test trust score calculation for all action types
+- Test todo generation from listing lifecycle events
+- Test location-based search with boundary conditions

@@ -1,31 +1,32 @@
-# Week 2: Product & Listing Services Sprint Plan
+# Week 2: Item & Listing Services Sprint Plan
 
 ## Sprint Overview
 **Duration**: 5 days  
-**Focus**: Product catalog and listing management with search capabilities  
-**Branch**: `feature/week2-product-listing-services`  
+**Focus**: Item and listing management with 5 listing types, PostGIS spatial search  
+**Branch**: `feature/week2-item-listing-services`  
 **Coverage Target**: 100% test coverage for all new code  
 
 ## Daily Breakdown & Commit Strategy
 
-### Day 1: Product Domain (Monday)
-**Goal**: Establish Product and Category aggregates with full test coverage
+### Day 1: Item & Category Domain (Monday)
+**Goal**: Establish Item and Category aggregates with full test coverage
 
 #### Morning Session (9 AM - 12 PM)
-- [ ] **RED**: Write failing tests for Product aggregate
-  - Product creation with required fields
-  - Specification pattern for product attributes
-  - Product validation rules
-  - Product state transitions
-- [ ] **GREEN**: Implement Product aggregate
-  - Product entity with properties
-  - Specification value objects
+- [ ] **RED**: Write failing tests for Item aggregate
+  - Item creation with required fields (title, description, condition)
+  - Item image management
+  - Item validation rules
+  - Category assignment
+- [ ] **GREEN**: Implement Item aggregate
+  - Item entity with properties
+  - ItemImage value objects
+  - ItemCondition enumeration
   - Business rule enforcement
-- [ ] **REFACTOR**: Clean up Product design
+- [ ] **REFACTOR**: Clean up Item design
   - Extract value objects
   - Optimize validation logic
 
-**Commit 1**: `feat: Add Product aggregate with specifications pattern`
+**Commit 1**: `feat: Add Item aggregate with image management`
 
 #### Afternoon Session (1 PM - 5 PM)
 - [ ] **RED**: Write failing tests for Category aggregate
@@ -49,34 +50,34 @@
 
 ---
 
-### Day 2: Product Application Layer (Tuesday)
-**Goal**: Implement CQRS pattern for Product operations
+### Day 2: Item Application Layer (Tuesday)
+**Goal**: Implement CQRS pattern for Item operations
 
 #### Morning Session (9 AM - 12 PM)
-- [ ] **RED**: Write tests for Product commands
-  - CreateProductCommand validation
-  - UpdateProductCommand logic
-  - DeleteProductCommand constraints
+- [ ] **RED**: Write tests for Item commands
+  - CreateItemCommand validation
+  - UpdateItemCommand logic
+  - AddItemImageCommand constraints
 - [ ] **GREEN**: Implement command handlers
-  - Create product with category assignment
-  - Update product with validation
-  - Soft delete implementation
+  - Create item with category assignment
+  - Update item with validation
+  - Image upload implementation
 - [ ] **REFACTOR**: Extract common command logic
 
-**Commit 3**: `feat: Add Product CQRS commands and handlers`
+**Commit 3**: `feat: Add Item CQRS commands and handlers`
 
 #### Afternoon Session (1 PM - 5 PM)
-- [ ] **RED**: Write tests for Product queries
-  - GetProductById query
-  - SearchProducts with filtering
-  - GetProductsByCategory
+- [ ] **RED**: Write tests for Item queries
+  - GetItemById query
+  - GetItemsBySeller query
+  - GetItemsByCategory query
 - [ ] **GREEN**: Implement query handlers
-  - Product projections
-  - Search implementation
+  - Item projections
+  - Basic search implementation
   - Category filtering
 - [ ] **REFACTOR**: Optimize query performance
 
-**Commit 4**: `feat: Add Product search queries with filtering`
+**Commit 4**: `feat: Add Item queries with category filtering`
 
 **End of Day Checklist**:
 - [ ] Application layer builds successfully
@@ -86,34 +87,35 @@
 
 ---
 
-### Day 3: Product Infrastructure (Wednesday)
-**Goal**: Implement data persistence and search infrastructure
+### Day 3: Item Infrastructure & Listing Domain (Wednesday)
+**Goal**: Implement Item persistence and establish Listing domain with 5 types
 
 #### Morning Session (9 AM - 12 PM)
-- [ ] **RED**: Write integration tests for repository
+- [ ] **RED**: Write integration tests for Item repository
   - CRUD operations
-  - Concurrency handling
-  - Transaction support
-- [ ] **GREEN**: Implement Product repository
+  - Image management
+  - Category relationships
+- [ ] **GREEN**: Implement Item repository
   - EF Core configurations
   - Repository pattern implementation
   - Database migrations
 - [ ] **REFACTOR**: Optimize database queries
 
-**Commit 5**: `feat: Add Product repository with EF Core`
+**Commit 5**: `feat: Add Item repository with EF Core`
 
 #### Afternoon Session (1 PM - 5 PM)
-- [ ] **RED**: Write tests for Elasticsearch integration
-  - Product indexing
-  - Search functionality
-  - Index synchronization
-- [ ] **GREEN**: Implement Elasticsearch service
-  - Product document mapping
-  - Index management
-  - Search service implementation
-- [ ] **REFACTOR**: Optimize search performance
+- [ ] **RED**: Write tests for Listing aggregate
+  - Listing creation with 5 types (FREE, FREE_TO_AUCTION, AUCTION, REVERSE_AUCTION, FOR_SALE)
+  - Location assignment (PostGIS)
+  - State transitions
+  - Bidding logic validation
+- [ ] **GREEN**: Implement Listing aggregate
+  - Listing entity with ListingType enumeration
+  - Location value object for PostGIS
+  - Business rules for each listing type
+- [ ] **REFACTOR**: Clean up Listing design
 
-**Commit 6**: `feat: Add Elasticsearch product indexing`
+**Commit 6**: `feat: Add Listing aggregate with 5 types and PostGIS location`
 
 **End of Day Checklist**:
 - [ ] Infrastructure layer builds successfully
@@ -123,36 +125,36 @@
 
 ---
 
-### Day 4: Listing Domain & Application (Thursday)
-**Goal**: Implement Listing aggregate with auction functionality
+### Day 4: Listing Application & Infrastructure (Thursday)
+**Goal**: Implement CQRS for Listing operations and PostGIS integration
 
 #### Morning Session (9 AM - 12 PM)
-- [ ] **RED**: Write tests for Listing aggregate
-  - Listing creation with product reference
-  - Auction type handling (forward/reverse/fixed)
-  - Listing lifecycle (draft/active/expired/sold)
-  - Price validation rules
-- [ ] **GREEN**: Implement Listing aggregate
-  - Listing entity with states
-  - Auction type value objects
-  - Business rules enforcement
-- [ ] **REFACTOR**: Clean up listing design
-
-**Commit 7**: `feat: Add Listing aggregate with auction types`
-
-#### Afternoon Session (1 PM - 5 PM)
 - [ ] **RED**: Write tests for Listing CQRS
-  - CreateListing command
-  - UpdateListing command
-  - Listing state transitions
-  - Listing queries
+  - CreateListingCommand with Item reference
+  - PlaceBidCommand for auction types
+  - ConvertToAuctionCommand for FREE_TO_AUCTION
+  - UpdateListingLocationCommand
 - [ ] **GREEN**: Implement CQRS operations
-  - Command handlers
-  - Query handlers
-  - Event publishing
+  - Command handlers for all 5 listing types
+  - Query handlers for listing search
+  - Event publishing for state changes
 - [ ] **REFACTOR**: Optimize CQRS implementation
 
-**Commit 8**: `feat: Add Listing CQRS operations`
+**Commit 7**: `feat: Add Listing CQRS with 5 listing type support`
+
+#### Afternoon Session (1 PM - 5 PM)
+- [ ] **RED**: Write tests for PostGIS integration
+  - Spatial queries for listing location
+  - Radius-based search
+  - Distance calculations
+  - Listing repository with spatial methods
+- [ ] **GREEN**: Implement PostGIS service
+  - Listing repository with spatial queries
+  - LocationSearchService for buyer radius search
+  - PostGIS database configuration
+- [ ] **REFACTOR**: Optimize spatial queries
+
+**Commit 8**: `feat: Add PostGIS spatial queries for location-based search`
 
 **End of Day Checklist**:
 - [ ] Listing domain/application builds successfully
@@ -162,36 +164,36 @@
 
 ---
 
-### Day 5: API Layer & Integration (Friday)
-**Goal**: Expose APIs and integrate geospatial features
+### Day 5: API Layer & Todo Service Integration (Friday)
+**Goal**: Expose APIs and integrate Todo Service for user task management
 
 #### Morning Session (9 AM - 12 PM)
 - [ ] **RED**: Write API tests
-  - Products controller endpoints
-  - Listings controller endpoints
+  - Items controller endpoints
+  - Listings controller endpoints with spatial search
   - Authentication/authorization
-  - Input validation
+  - Input validation for 5 listing types
 - [ ] **GREEN**: Implement API controllers
-  - Products API with Swagger docs
-  - Listings API with Swagger docs
+  - Items API with Swagger docs
+  - Listings API with location-based search
   - Error handling
   - Response formatting
 
-**Commit 9**: `feat: Add Products API controller`
-**Commit 10**: `feat: Add Listings API controller`
+**Commit 9**: `feat: Add Items API controller with image upload`
+**Commit 10**: `feat: Add Listings API controller with PostGIS search`
 
 #### Afternoon Session (1 PM - 5 PM)
-- [ ] **RED**: Write tests for geospatial features
-  - Location-based search
-  - Distance calculations
-  - Boundary queries
-- [ ] **GREEN**: Implement PostGIS integration
-  - Spatial queries
-  - Location indexing
-  - Distance algorithms
-- [ ] **REFACTOR**: Optimize spatial queries
+- [ ] **RED**: Write tests for Todo Service integration
+  - Todo creation from listing events
+  - Urgency level calculation
+  - User todo retrieval
+- [ ] **GREEN**: Implement Todo Service
+  - TodoItem aggregate in separate bounded context
+  - Event handlers for listing lifecycle
+  - Redis caching for fast todo access
+- [ ] **REFACTOR**: Optimize todo generation
 
-**Commit 11**: `feat: Add PostGIS geospatial search`
+**Commit 11**: `feat: Add Todo Service with Redis caching and event-driven updates`
 
 **End of Day Checklist**:
 - [ ] All APIs documented in Swagger
@@ -205,24 +207,25 @@
 ## Testing Strategy
 
 ### Unit Tests
-- Domain models: 100% coverage
-- Application handlers: 100% coverage
-- Value objects: 100% coverage
+- Item & Listing domain models: 100% coverage
+- CQRS handlers: 100% coverage
+- Value objects (ItemImage, Location, ListingType): 100% coverage
 
 ### Integration Tests
 - Repository operations with TestContainers
-- Elasticsearch indexing with test cluster
-- PostGIS queries with spatial test data
+- PostGIS spatial queries with test data
+- Todo Service with Redis test container
 
 ### API Tests
-- Controller endpoints with WebApplicationFactory
+- Item & Listing controller endpoints with WebApplicationFactory
+- Location-based search API testing
+- 5 listing type creation flows
 - Authentication/authorization flows
-- Error handling scenarios
 
 ### Performance Tests
-- Load testing for search operations
-- Concurrent listing creation
-- Spatial query performance
+- PostGIS spatial query performance
+- Concurrent listing creation with different types
+- Todo Service Redis cache performance
 
 ## Definition of Done
 
@@ -238,17 +241,17 @@
 ## Git Commit Summary
 
 Expected commits for Week 2:
-1. `feat: Add Product aggregate with specifications pattern`
+1. `feat: Add Item aggregate with image management`
 2. `feat: Add Category aggregate with hierarchical structure`
-3. `feat: Add Product CQRS commands and handlers`
-4. `feat: Add Product search queries with filtering`
-5. `feat: Add Product repository with EF Core`
-6. `feat: Add Elasticsearch product indexing`
-7. `feat: Add Listing aggregate with auction types`
-8. `feat: Add Listing CQRS operations`
-9. `feat: Add Products API controller`
-10. `feat: Add Listings API controller`
-11. `feat: Add PostGIS geospatial search`
+3. `feat: Add Item CQRS commands and handlers`
+4. `feat: Add Item queries with category filtering`
+5. `feat: Add Item repository with EF Core`
+6. `feat: Add Listing aggregate with 5 types and PostGIS location`
+7. `feat: Add Listing CQRS with 5 listing type support`
+8. `feat: Add PostGIS spatial queries for location-based search`
+9. `feat: Add Items API controller with image upload`
+10. `feat: Add Listings API controller with PostGIS search`
+11. `feat: Add Todo Service with Redis caching and event-driven updates`
 
 Total: ~11 focused commits following TDD methodology
 
