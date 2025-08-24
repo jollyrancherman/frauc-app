@@ -1,0 +1,2 @@
+-- This file is kept for consistency but Keycloak now uses its own separate database
+-- All Keycloak setup is handled by the keycloak-postgres container
