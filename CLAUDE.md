@@ -87,6 +87,10 @@ Recent architectural improvements implement enterprise-grade patterns:
 - **Repository Optimization**: Selective loading patterns and parallel query execution for improved performance
 - **Transaction Management**: Robust transaction handling with proper rollback mechanisms
 - **API Security**: DoS protection through parameter validation (page size limits, range validations)
+- **Domain Model Enhancements**: Rich value objects with factory methods, business rule constants, soft delete pattern
+- **Specification Pattern**: Composable business rules for complex domain queries
+- **Spatial Query Support**: PostGIS integration for location-based listing searches
+- **Enhanced Auction Features**: Buy-now pricing, minimum bid increments, auto-bidding support
 
 ## Development Commands
 
