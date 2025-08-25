@@ -17,9 +17,19 @@ public class ItemRepository : IItemRepository
 
     public async Task<Item?> GetByIdAsync(ItemId id, CancellationToken cancellationToken = default)
     {
-        return await _context.Items
-            .Include(i => i.Images)
-            .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
+        return await GetByIdAsync(id, includeImages: false, cancellationToken);
+    }
+
+    public async Task<Item?> GetByIdAsync(ItemId id, bool includeImages, CancellationToken cancellationToken = default)
+    {
+        var query = _context.Items.AsQueryable();
+        
+        if (includeImages)
+        {
+            query = query.Include(i => i.Images);
+        }
+        
+        return await query.FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
     }
 
     public async Task<IEnumerable<Item>> GetBySellerIdAsync(UserId sellerId, CancellationToken cancellationToken = default)
@@ -89,19 +99,21 @@ public class ItemRepository : IItemRepository
         int pageSize, 
         CancellationToken cancellationToken = default)
     {
-        var query = _context.Items
-            .Include(i => i.Images)
-            .Where(i => i.SellerId == sellerId);
-
-        var totalCount = await query.CountAsync(cancellationToken);
+        var baseQuery = _context.Items.Where(i => i.SellerId == sellerId);
         
-        var items = await query
+        // Execute count and data queries in parallel
+        var countTask = baseQuery.CountAsync(cancellationToken);
+        
+        var itemsTask = baseQuery
             .OrderByDescending(i => i.CreatedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
+            .Include(i => i.Images) // Only include images for the paginated results
             .ToListAsync(cancellationToken);
-
-        return (items, totalCount);
+        
+        await Task.WhenAll(countTask, itemsTask);
+        
+        return (itemsTask.Result, countTask.Result);
     }
 
     public async Task<(IEnumerable<Item> Items, int TotalCount)> GetPagedByCategoryAsync(
@@ -110,18 +122,20 @@ public class ItemRepository : IItemRepository
         int pageSize, 
         CancellationToken cancellationToken = default)
     {
-        var query = _context.Items
-            .Include(i => i.Images)
-            .Where(i => i.CategoryId == categoryId);
-
-        var totalCount = await query.CountAsync(cancellationToken);
+        var baseQuery = _context.Items.Where(i => i.CategoryId == categoryId);
         
-        var items = await query
+        // Execute count and data queries in parallel
+        var countTask = baseQuery.CountAsync(cancellationToken);
+        
+        var itemsTask = baseQuery
             .OrderByDescending(i => i.CreatedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
+            .Include(i => i.Images) // Only include images for the paginated results
             .ToListAsync(cancellationToken);
-
-        return (items, totalCount);
+        
+        await Task.WhenAll(countTask, itemsTask);
+        
+        return (itemsTask.Result, countTask.Result);
     }
 }

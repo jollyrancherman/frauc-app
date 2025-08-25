@@ -117,6 +117,102 @@ tests/
 - Domain validation in aggregate roots
 - Guard clauses for preconditions
 
+## Enterprise-Grade Architectural Patterns
+
+### ValidationBehavior Pipeline
+Integrated MediatR pipeline behavior for comprehensive request validation:
+```csharp
+// Automatically validates all commands/queries using FluentValidation
+public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+{
+    // Handles Result<T> pattern integration
+    // Converts validation failures to consistent error responses
+    // Registered in Program.cs: AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>))
+}
+```
+
+### Global Exception Handling
+Centralized exception management with ProblemDetails standard:
+```csharp
+// GlobalExceptionMiddleware handles all unhandled exceptions
+app.UseMiddleware<GlobalExceptionMiddleware>();
+```
+- Environment-specific error detail exposure
+- Structured validation error responses
+- Consistent error format across all APIs
+- Security-conscious error information in production
+
+### Result Pattern Implementation
+Consistent error handling without exceptions for business logic:
+```csharp
+public async Task<Result<ItemDto>> Handle(CreateItemCommand request, CancellationToken cancellationToken)
+{
+    // Returns Result.Success(value) or Result.Failure(errorMessage)
+    // Eliminates throw/catch for business rule violations
+    // Provides explicit success/failure semantics
+}
+```
+
+### JWT Authentication Configuration
+Flexible authentication supporting both Keycloak and symmetric keys:
+```csharp
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        // Production: Keycloak authority-based validation
+        // Development: Symmetric key validation for testing
+        // Comprehensive token validation parameters
+    });
+```
+
+### CORS Security Hardening
+Production-ready CORS configuration:
+```csharp
+// Configurable allowed origins from appsettings
+// Method and header restrictions
+// Preflight caching optimization
+policy.WithOrigins(allowedOrigins)
+      .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+      .WithHeaders("Content-Type", "Authorization", "Accept", "X-Requested-With")
+      .AllowCredentials()
+      .SetPreflightMaxAge(TimeSpan.FromHours(1));
+```
+
+### Repository Pattern Optimizations
+Performance-optimized data access patterns:
+```csharp
+// Selective loading to prevent N+1 queries
+Task<Item?> GetByIdAsync(ItemId id, bool includeImages, CancellationToken cancellationToken);
+
+// Parallel query execution for pagination
+var countTask = baseQuery.CountAsync(cancellationToken);
+var itemsTask = baseQuery.Skip().Take().Include().ToListAsync(cancellationToken);
+await Task.WhenAll(countTask, itemsTask);
+```
+
+### Transaction Management
+Robust transaction handling with proper rollback:
+```csharp
+await _unitOfWork.BeginTransactionAsync(cancellationToken);
+try
+{
+    // Business operations
+    await _unitOfWork.CommitTransactionAsync(cancellationToken);
+}
+catch
+{
+    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+    throw;
+}
+```
+
+### API Security and Validation
+DoS protection through parameter validation:
+```csharp
+[FromQuery][Range(1, 1000, ErrorMessage = "Page number must be between 1 and 1000")] int pageNumber = 1,
+[FromQuery][Range(1, 100, ErrorMessage = "Page size must be between 1 and 100")] int pageSize = 10
+```
+
 ## Service-Specific Configurations
 
 ### User Service

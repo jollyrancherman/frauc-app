@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using Marketplace.Application.Items.Commands;
 using Marketplace.Application.Items.Queries;
 using Marketplace.Application.Items.DTOs;
@@ -122,11 +123,12 @@ public class ItemsController : ControllerBase
     /// <returns>Paginated list of items</returns>
     [HttpGet("seller/{sellerId:guid}")]
     [ProducesResponseType(typeof(PaginatedResponse<ItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<PaginatedResponse<ItemDto>>> GetItemsBySeller(
         Guid sellerId,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10,
+        [FromQuery][Range(1, 1000, ErrorMessage = "Page number must be between 1 and 1000")] int pageNumber = 1,
+        [FromQuery][Range(1, 100, ErrorMessage = "Page size must be between 1 and 100")] int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Retrieving items for seller: {SellerId}, Page: {PageNumber}, Size: {PageSize}", 
@@ -158,11 +160,12 @@ public class ItemsController : ControllerBase
     /// <returns>Paginated list of items</returns>
     [HttpGet("category/{categoryId:guid}")]
     [ProducesResponseType(typeof(PaginatedResponse<ItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<PaginatedResponse<ItemDto>>> GetItemsByCategory(
         Guid categoryId,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10,
+        [FromQuery][Range(1, 1000, ErrorMessage = "Page number must be between 1 and 1000")] int pageNumber = 1,
+        [FromQuery][Range(1, 100, ErrorMessage = "Page size must be between 1 and 100")] int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Retrieving items for category: {CategoryId}, Page: {PageNumber}, Size: {PageSize}", 

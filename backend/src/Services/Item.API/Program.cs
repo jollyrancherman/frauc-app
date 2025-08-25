@@ -1,6 +1,10 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Item.API.Middleware;
 using Marketplace.Infrastructure.Data;
 using Marketplace.Infrastructure.Repositories;
 using Marketplace.Infrastructure.Common;
@@ -26,6 +30,9 @@ builder.Services.AddMediatR(cfg => {
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
 });
 
+// Add MediatR behaviors
+builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
 // FluentValidation
 builder.Services.AddValidatorsFromAssembly(typeof(CreateItemCommandValidator).Assembly);
 
@@ -40,21 +47,79 @@ builder.Services.AddMemoryCache();
 // Logging
 builder.Services.AddLogging();
 
-// Authentication (configure as needed)
-// builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//     .AddJwtBearer(options =>
-//     {
-//         // Configure JWT settings
-//     });
+// Authentication with JWT Bearer
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = builder.Configuration["Authentication:Authority"];
+        options.Audience = builder.Configuration["Authentication:Audience"];
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+        
+        // For development/testing with symmetric keys (replace with Keycloak in production)
+        if (builder.Environment.IsDevelopment())
+        {
+            var key = builder.Configuration["Authentication:SecretKey"];
+            if (!string.IsNullOrEmpty(key))
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                    ValidateIssuer = true,
+                    ValidIssuer = builder.Configuration["Authentication:Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = builder.Configuration["Authentication:Audience"],
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+            }
+        }
+        
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                if (builder.Environment.IsDevelopment())
+                {
+                    context.Response.Headers.Add("Token-Error", context.Exception.Message);
+                }
+                context.Response.StatusCode = 401;
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                // Additional token validation logic if needed
+                return Task.CompletedTask;
+            }
+        };
+    });
 
-// CORS (configure as needed for frontend)
+// Authorization policies
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ItemOwner", policy =>
+        policy.RequireAuthenticatedUser()
+              .RequireClaim("scope", "items:write"));
+              
+    options.AddPolicy("ItemReader", policy =>
+        policy.RequireAuthenticatedUser()
+              .RequireClaim("scope", "items:read"));
+});
+
+// CORS - Secure configuration
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend",
-        builder => builder
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader());
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() 
+                           ?? new[] { "https://localhost:3000" };
+                           
+        policy.WithOrigins(allowedOrigins)
+              .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+              .WithHeaders("Content-Type", "Authorization", "Accept", "X-Requested-With")
+              .AllowCredentials()
+              .SetPreflightMaxAge(TimeSpan.FromHours(1)); // Cache preflight requests
+    });
 });
 
 var app = builder.Build();
@@ -68,10 +133,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Add global exception handling middleware (must be early in pipeline)
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
 app.UseCors("AllowFrontend");
 
-// app.UseAuthentication();
-// app.UseAuthorization();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

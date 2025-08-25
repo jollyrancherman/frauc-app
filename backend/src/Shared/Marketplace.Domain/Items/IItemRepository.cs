@@ -7,6 +7,7 @@ public interface IItemRepository
 {
     // Basic CRUD operations
     Task<Item?> GetByIdAsync(ItemId id, CancellationToken cancellationToken = default);
+    Task<Item?> GetByIdAsync(ItemId id, bool includeImages, CancellationToken cancellationToken = default);
     Task<IEnumerable<Item>> GetBySellerIdAsync(UserId sellerId, CancellationToken cancellationToken = default);
     Task<IEnumerable<Item>> GetByCategoryIdAsync(CategoryId categoryId, CancellationToken cancellationToken = default);
     Task AddAsync(Item item, CancellationToken cancellationToken = default);
