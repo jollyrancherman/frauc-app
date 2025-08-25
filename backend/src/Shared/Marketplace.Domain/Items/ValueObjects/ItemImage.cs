@@ -6,9 +6,11 @@ public class ItemImage : ValueObject
 {
     public ImageId Id { get; private set; }
     public string Url { get; private set; }
+    public string? AltText { get; private set; }
     public bool IsPrimary { get; private set; }
+    public int DisplayOrder { get; private set; }
 
-    public ItemImage(ImageId id, string url, bool isPrimary)
+    public ItemImage(ImageId id, string url, bool isPrimary, int displayOrder = 0, string? altText = null)
     {
         if (string.IsNullOrWhiteSpace(url))
             throw new ArgumentException("Image URL cannot be empty", nameof(url));
@@ -19,6 +21,8 @@ public class ItemImage : ValueObject
         Id = id ?? throw new ArgumentNullException(nameof(id));
         Url = url;
         IsPrimary = isPrimary;
+        DisplayOrder = displayOrder;
+        AltText = altText;
     }
 
     public void SetPrimary(bool isPrimary)
