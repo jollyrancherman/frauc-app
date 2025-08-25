@@ -1,5 +1,6 @@
 using Marketplace.Domain.Common;
 using Marketplace.Domain.Items.ValueObjects;
+using Marketplace.Domain.Items.Events;
 using Marketplace.Domain.Categories;
 
 namespace Marketplace.Domain.Items;
@@ -44,7 +45,12 @@ public class Item : Entity<ItemId>
         UserId sellerId,
         ItemCondition condition)
     {
-        return new Item(id, title, description, categoryId, sellerId, condition);
+        var item = new Item(id, title, description, categoryId, sellerId, condition);
+        
+        // Raise domain event
+        item.AddDomainEvent(new ItemCreatedEvent(id, sellerId, categoryId, title, item.CreatedAt));
+        
+        return item;
     }
 
     public void UpdateDetails(string title, string description)
