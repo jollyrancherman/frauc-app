@@ -77,6 +77,17 @@ The platform consists of 15 core microservices organized by domain:
 - Domain events for cross-service communication via MediatR
 - Repository pattern with Entity Framework Core 9
 
+### Enterprise-Grade Architecture Features
+Recent architectural improvements implement enterprise-grade patterns:
+- **ValidationBehavior Pipeline**: MediatR pipeline integration with FluentValidation for consistent request validation
+- **Global Exception Handling**: Centralized ProblemDetails-compliant error management with environment-specific detail exposure
+- **Result Pattern**: Eliminates exceptions for business rule violations, providing explicit success/failure semantics
+- **JWT Authentication**: Flexible configuration supporting both Keycloak (production) and symmetric keys (development)
+- **CORS Security**: Production-ready CORS with configurable origins, method restrictions, and preflight caching
+- **Repository Optimization**: Selective loading patterns and parallel query execution for improved performance
+- **Transaction Management**: Robust transaction handling with proper rollback mechanisms
+- **API Security**: DoS protection through parameter validation (page size limits, range validations)
+
 ## Development Commands
 
 ### Backend (.NET 9)
