@@ -119,6 +119,89 @@ tests/
 
 ## Enterprise-Grade Architectural Patterns
 
+### Domain Model Enhancements (Listing Aggregate)
+The Listing aggregate implements advanced DDD patterns with comprehensive business logic:
+
+#### Value Objects with Factory Methods
+```csharp
+// Money value object with null safety and operations
+public sealed class Money : ValueObject
+{
+    public static Money FromCents(int cents, string currency = "USD");
+    public int ToCents();
+    // Null-safe operator overloads with currency validation
+}
+
+// Location with spatial calculations
+public sealed class Location : ValueObject  
+{
+    public double DistanceTo(Location other); // Haversine formula
+}
+```
+
+#### Business Rule Constants
+```csharp
+public static class ListingConstants
+{
+    public static readonly TimeSpan FreeListingDuration = TimeSpan.FromDays(30);
+    public static readonly TimeSpan MinimumAuctionDuration = TimeSpan.FromHours(1);
+    public const decimal MinimumBidIncrementPercentage = 0.05m;
+    // Centralized configuration for business rules
+}
+```
+
+#### Enhanced Auction Settings
+```csharp
+public sealed class AuctionSettings : ValueObject
+{
+    public Money? BuyNowPrice { get; }      // Immediate purchase option
+    public Money? MinimumBidIncrement { get; } // Anti-spam protection
+    public bool AllowAutoBidding { get; }   // Proxy bidding support
+}
+```
+
+#### Soft Delete Pattern
+```csharp
+public class Listing : Entity<ListingId>
+{
+    public DateTime? DeletedAt { get; private set; }
+    public bool IsDeleted => DeletedAt.HasValue;
+    
+    public void SoftDelete();  // Maintains audit trail
+    public void Restore();      // Recovery capability
+}
+```
+
+#### Specification Pattern
+```csharp
+// Composable business rules
+public abstract class Specification<T> : ISpecification<T>
+{
+    public Specification<T> And(ISpecification<T> specification);
+    public Specification<T> Or(ISpecification<T> specification);
+    public Specification<T> Not();
+}
+
+// Usage: Find active listings near location
+var spec = new ActiveListingSpecification()
+    .And(new ListingNearLocationSpecification(userLocation, 10));
+```
+
+#### Repository with Spatial Queries
+```csharp
+public interface IListingRepository
+{
+    // PostGIS spatial queries
+    Task<IEnumerable<Listing>> GetNearbyListingsAsync(
+        Location center, double radiusKm, CancellationToken ct);
+    
+    Task<IEnumerable<Listing>> GetListingsInBoundingBoxAsync(
+        double minLat, double minLon, double maxLat, double maxLon, CancellationToken ct);
+}
+```
+
+## Enterprise-Grade Architectural Patterns
+
 ### ValidationBehavior Pipeline
 Integrated MediatR pipeline behavior for comprehensive request validation:
 ```csharp
