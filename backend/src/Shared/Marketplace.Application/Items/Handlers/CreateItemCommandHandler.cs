@@ -35,8 +35,12 @@ public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, Resul
             _logger.LogInformation("Creating item with ID {ItemId} for seller {SellerId}", 
                 request.ItemId, request.SellerId);
 
-            // Note: Existence validation is now handled by FluentValidation in ValidationBehavior
-            // This eliminates duplicate validation logic
+            // Check if item already exists
+            var existingItem = await _itemRepository.GetByIdAsync(request.ItemId, cancellationToken);
+            if (existingItem != null)
+            {
+                return Result.Failure<ItemDto>("Item with this ID already exists");
+            }
 
             await _unitOfWork.BeginTransactionAsync(cancellationToken);
 

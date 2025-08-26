@@ -10,8 +10,10 @@ using Marketplace.Infrastructure.Repositories;
 using Marketplace.Infrastructure.Common;
 using Marketplace.Domain.Items;
 using Marketplace.Application.Common;
+using Marketplace.Application.Common.Interfaces;
 using Marketplace.Application.Items.Handlers;
 using Marketplace.Application.Items.Validators;
+using Marketplace.Application.Items.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +42,9 @@ builder.Services.AddValidatorsFromAssembly(typeof(CreateItemCommandValidator).As
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+
+// File storage service
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 
 // Memory Cache
 builder.Services.AddMemoryCache();
