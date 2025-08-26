@@ -2,6 +2,7 @@ using FluentAssertions;
 using Xunit;
 using NSubstitute;
 using Microsoft.Extensions.Logging;
+using Marketplace.Application.Common;
 using Marketplace.Application.Listings.Services;
 using Marketplace.Domain.Listings;
 using Marketplace.Domain.Items;

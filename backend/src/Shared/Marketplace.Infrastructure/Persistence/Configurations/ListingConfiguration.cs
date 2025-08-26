@@ -66,7 +66,7 @@ public class ListingConfiguration : IEntityTypeConfiguration<Listing>
             .HasConversion(
                 spatialPoint => spatialPoint,
                 point => point,
-                new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueComparer<NetTopologySuite.Geometries.Point>(
+                new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<NetTopologySuite.Geometries.Point>(
                     (l, r) => l != null && r != null && l.Equals(r),
                     v => v.GetHashCode(),
                     v => (NetTopologySuite.Geometries.Point)v.Copy()));
@@ -79,7 +79,8 @@ public class ListingConfiguration : IEntityTypeConfiguration<Listing>
         // Configure domain SpatialPoint as owned entity
         builder.OwnsOne(l => l.SpatialPoint, spatialBuilder =>
         {
-            spatialBuilder.Ignore(sp => sp.SpatialPoint); // Prevent recursion
+            spatialBuilder.Property(sp => sp.Latitude).HasColumnName("Latitude");
+            spatialBuilder.Property(sp => sp.Longitude).HasColumnName("Longitude");
         });
 
         // Enum properties

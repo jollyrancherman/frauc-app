@@ -3,6 +3,7 @@ using Marketplace.Domain.Listings.ValueObjects;
 using Marketplace.Domain.Items.ValueObjects;
 using Marketplace.Domain.Categories;
 using Marketplace.Domain.Listings.Events;
+using NetTopologySuite.Geometries;
 
 namespace Marketplace.Domain.Listings;
 
@@ -14,6 +15,11 @@ public class Listing : Entity<ListingId>
     public string Description { get; private set; }
     public ValueObjects.Location Location { get; private set; }
     public SpatialPoint SpatialPoint { get; private set; } // Domain spatial abstraction
+    
+    // EF Core mapping property for PostGIS spatial queries
+    public NetTopologySuite.Geometries.Point LocationPoint => 
+        new NetTopologySuite.Geometries.Point(Location.Longitude, Location.Latitude) { SRID = 4326 };
+    
     public CategoryId CategoryId { get; private set; }
     public ListingType ListingType { get; private set; }
     public ListingStatus Status { get; private set; }
