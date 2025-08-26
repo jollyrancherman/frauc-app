@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using Marketplace.Application.Items.Commands;
 using Marketplace.Application.Items.Queries;
 using Marketplace.Application.Items.DTOs;
@@ -185,6 +186,226 @@ public class ItemsController : ControllerBase
         }
 
         return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Add an image to an item
+    /// </summary>
+    /// <param name="itemId">Item ID</param>
+    /// <param name="imageFile">Image file to upload</param>
+    /// <param name="isPrimary">Whether this should be the primary image</param>
+    /// <param name="altText">Optional alt text for the image</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Created image details</returns>
+    [HttpPost("{itemId:guid}/images")]
+    [ProducesResponseType(typeof(ItemImageDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ItemImageDto>> AddItemImage(
+        Guid itemId,
+        IFormFile imageFile,
+        [FromForm] bool isPrimary = false,
+        [FromForm] string? altText = null,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Adding image to item {ItemId} by user {UserId}", 
+            itemId, GetCurrentUserId().Value);
+
+        if (imageFile == null || imageFile.Length == 0)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid file",
+                Detail = "No file was provided or file is empty",
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+
+        var command = new AddItemImageCommand(
+            new ItemId(itemId),
+            GetCurrentUserId(),
+            imageFile,
+            isPrimary,
+            altText);
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            _logger.LogWarning("Failed to add image to item {ItemId}: {Error}", itemId, result.ErrorMessage);
+
+            if (result.ErrorMessage?.Contains("not found") == true)
+            {
+                return NotFound(new ProblemDetails
+                {
+                    Title = "Item not found",
+                    Detail = result.ErrorMessage,
+                    Status = StatusCodes.Status404NotFound
+                });
+            }
+
+            if (result.ErrorMessage?.Contains("not authorized") == true)
+            {
+                return Forbid();
+            }
+
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Failed to add image",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+
+        _logger.LogInformation("Successfully added image {ImageId} to item {ItemId}", 
+            result.Value!.Id.Value, itemId);
+
+        return CreatedAtAction(
+            nameof(GetItem), 
+            new { id = itemId }, 
+            result.Value);
+    }
+
+    /// <summary>
+    /// Remove an image from an item
+    /// </summary>
+    /// <param name="itemId">Item ID</param>
+    /// <param name="imageId">Image ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Success status</returns>
+    [HttpDelete("{itemId:guid}/images/{imageId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> RemoveItemImage(
+        Guid itemId,
+        Guid imageId,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Removing image {ImageId} from item {ItemId} by user {UserId}", 
+            imageId, itemId, GetCurrentUserId().Value);
+
+        var command = new RemoveItemImageCommand(
+            new ItemId(itemId),
+            GetCurrentUserId(),
+            new ImageId(imageId));
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            _logger.LogWarning("Failed to remove image {ImageId} from item {ItemId}: {Error}", 
+                imageId, itemId, result.ErrorMessage);
+
+            if (result.ErrorMessage?.Contains("not found") == true)
+            {
+                return NotFound(new ProblemDetails
+                {
+                    Title = "Item or image not found",
+                    Detail = result.ErrorMessage,
+                    Status = StatusCodes.Status404NotFound
+                });
+            }
+
+            if (result.ErrorMessage?.Contains("not authorized") == true)
+            {
+                return Forbid();
+            }
+
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Failed to remove image",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+
+        _logger.LogInformation("Successfully removed image {ImageId} from item {ItemId}", imageId, itemId);
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Set an image as the primary image for an item
+    /// </summary>
+    /// <param name="itemId">Item ID</param>
+    /// <param name="imageId">Image ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Success status</returns>
+    [HttpPost("{itemId:guid}/images/{imageId:guid}/set-primary")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> SetPrimaryImage(
+        Guid itemId,
+        Guid imageId,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Setting image {ImageId} as primary for item {ItemId} by user {UserId}", 
+            imageId, itemId, GetCurrentUserId().Value);
+
+        var command = new SetPrimaryImageCommand(
+            new ItemId(itemId),
+            GetCurrentUserId(),
+            new ImageId(imageId));
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            _logger.LogWarning("Failed to set primary image {ImageId} for item {ItemId}: {Error}", 
+                imageId, itemId, result.ErrorMessage);
+
+            if (result.ErrorMessage?.Contains("not found") == true)
+            {
+                return NotFound(new ProblemDetails
+                {
+                    Title = "Item or image not found",
+                    Detail = result.ErrorMessage,
+                    Status = StatusCodes.Status404NotFound
+                });
+            }
+
+            if (result.ErrorMessage?.Contains("not authorized") == true)
+            {
+                return Forbid();
+            }
+
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Failed to set primary image",
+                Detail = result.ErrorMessage,
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+
+        _logger.LogInformation("Successfully set image {ImageId} as primary for item {ItemId}", imageId, itemId);
+
+        return Ok(new { Success = true });
+    }
+
+    /// <summary>
+    /// Get current user ID from JWT claims
+    /// </summary>
+    /// <returns>User ID from claims</returns>
+    private UserId GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value
+            ?? throw new UnauthorizedAccessException("User ID not found in token");
+
+        if (!Guid.TryParse(userIdClaim, out var userId))
+        {
+            throw new UnauthorizedAccessException("Invalid user ID format in token");
+        }
+
+        return new UserId(userId);
     }
 }
 

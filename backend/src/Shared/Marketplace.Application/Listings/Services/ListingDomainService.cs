@@ -34,7 +34,7 @@ public class ListingDomainService : IListingDomainService
         UserId sellerId,
         string title,
         string description,
-        ValueObjects.Location location,
+        Location location,
         CategoryId categoryId,
         CancellationToken cancellationToken = default)
     {
@@ -58,7 +58,7 @@ public class ListingDomainService : IListingDomainService
         UserId sellerId,
         string title,
         string description,
-        ValueObjects.Location location,
+        Location location,
         CategoryId categoryId,
         TimeSpan duration,
         CancellationToken cancellationToken = default)
@@ -84,7 +84,7 @@ public class ListingDomainService : IListingDomainService
         UserId sellerId,
         string title,
         string description,
-        ValueObjects.Location location,
+        Location location,
         CategoryId categoryId,
         Money startingPrice,
         Money? reservePrice,
@@ -114,7 +114,7 @@ public class ListingDomainService : IListingDomainService
         UserId sellerId,
         string title,
         string description,
-        ValueObjects.Location location,
+        Location location,
         CategoryId categoryId,
         Money maxPrice,
         TimeSpan duration,
@@ -142,7 +142,7 @@ public class ListingDomainService : IListingDomainService
         UserId sellerId,
         string title,
         string description,
-        ValueObjects.Location location,
+        Location location,
         CategoryId categoryId,
         Money price,
         CancellationToken cancellationToken = default)

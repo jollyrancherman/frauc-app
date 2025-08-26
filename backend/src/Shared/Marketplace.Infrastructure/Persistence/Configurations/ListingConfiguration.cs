@@ -199,6 +199,11 @@ public class ListingConfiguration : IEntityTypeConfiguration<Listing>
         // Computed property for soft delete
         builder.Ignore(l => l.IsDeleted);
 
+        // Optimistic concurrency control
+        builder.Property(l => l.RowVersion)
+            .IsRowVersion()
+            .IsConcurrencyToken();
+
         // Indexes for performance
         builder.HasIndex(l => l.SellerId)
             .HasDatabaseName("IX_Listings_SellerId");

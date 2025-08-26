@@ -13,6 +13,9 @@ public abstract class Entity<TId> : IEquatable<Entity<TId>>
     }
 
     public TId Id { get; protected init; }
+    
+    // Optimistic concurrency support
+    public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 
     public IReadOnlyCollection<INotification> DomainEvents => _domainEvents.AsReadOnly();
 

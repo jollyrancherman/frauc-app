@@ -5,12 +5,16 @@ namespace Marketplace.Application.Items.DTOs;
 public record ItemImageDto(
     ImageId Id,
     string Url,
-    bool IsPrimary
+    string? AltText,
+    bool IsPrimary,
+    int DisplayOrder
 )
 {
     public static ItemImageDto FromDomain(ItemImage itemImage) => new(
         itemImage.Id,
         itemImage.Url,
-        itemImage.IsPrimary
+        itemImage.AltText,
+        itemImage.IsPrimary,
+        itemImage.DisplayOrder
     );
 }

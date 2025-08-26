@@ -1,12 +1,17 @@
 using FluentValidation;
 using Marketplace.Application.Listings.Commands;
+using Marketplace.Application.Common.Security;
 
 namespace Marketplace.Application.Listings.Validators;
 
 public class CreateFreeListingCommandValidator : AbstractValidator<CreateFreeListingCommand>
 {
-    public CreateFreeListingCommandValidator()
+    private readonly IHtmlSanitizer _htmlSanitizer;
+
+    public CreateFreeListingCommandValidator(IHtmlSanitizer htmlSanitizer)
     {
+        _htmlSanitizer = htmlSanitizer;
+
         RuleFor(x => x.ItemId)
             .NotEmpty()
             .WithMessage("ItemId is required");
@@ -20,16 +25,14 @@ public class CreateFreeListingCommandValidator : AbstractValidator<CreateFreeLis
             .WithMessage("Title is required")
             .MaximumLength(200)
             .WithMessage("Title cannot exceed 200 characters")
-            .Must(NotContainHtml)
-            .WithMessage("Title cannot contain HTML");
+            .Must(title => !_htmlSanitizer.ContainsHtml(title))
+            .WithMessage("Title cannot contain HTML or script tags");
 
         RuleFor(x => x.Description)
             .NotEmpty()
             .WithMessage("Description is required")
             .MaximumLength(5000)
-            .WithMessage("Description cannot exceed 5000 characters")
-            .Must(NotContainMaliciousContent)
-            .WithMessage("Description contains prohibited content");
+            .WithMessage("Description cannot exceed 5000 characters");
 
         RuleFor(x => x.Location)
             .NotNull()

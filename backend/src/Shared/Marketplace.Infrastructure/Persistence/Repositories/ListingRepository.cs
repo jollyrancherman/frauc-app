@@ -36,6 +36,7 @@ public class ListingRepository : IListingRepository
     {
         return await _context.Listings
             .AsNoTracking()
+            .Include(l => l.AuctionSettings) // Eager load auction settings
             .Where(l => l.SellerId == sellerId && !l.IsDeleted)
             .OrderByDescending(l => l.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -271,11 +272,16 @@ public class ListingRepository : IListingRepository
         var query = _context.Listings.AsNoTracking()
             .Where(l => !l.IsDeleted);
 
-        // Text search
+        // Text search with PostgreSQL Full-Text Search for better performance and security
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            query = query.Where(l => EF.Functions.ILike(l.Title, $"%{searchTerm}%") ||
-                                   EF.Functions.ILike(l.Description, $"%{searchTerm}%"));
+            // Sanitize search term to prevent injection
+            searchTerm = searchTerm.Replace("'", "").Replace("\"", "").Trim();
+            
+            // Use PostgreSQL Full-Text Search
+            query = query.Where(l => 
+                EF.Functions.ToTsVector("english", l.Title + " " + l.Description)
+                    .Matches(EF.Functions.ToTsQuery("english", searchTerm)));
         }
 
         // Category filter
