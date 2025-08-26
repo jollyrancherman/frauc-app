@@ -117,6 +117,185 @@ tests/
 - Domain validation in aggregate roots
 - Guard clauses for preconditions
 
+## Enterprise-Grade Architectural Patterns
+
+### Domain Model Enhancements (Listing Aggregate)
+The Listing aggregate implements advanced DDD patterns with comprehensive business logic:
+
+#### Value Objects with Factory Methods
+```csharp
+// Money value object with null safety and operations
+public sealed class Money : ValueObject
+{
+    public static Money FromCents(int cents, string currency = "USD");
+    public int ToCents();
+    // Null-safe operator overloads with currency validation
+}
+
+// Location with spatial calculations
+public sealed class Location : ValueObject  
+{
+    public double DistanceTo(Location other); // Haversine formula
+}
+```
+
+#### Business Rule Constants
+```csharp
+public static class ListingConstants
+{
+    public static readonly TimeSpan FreeListingDuration = TimeSpan.FromDays(30);
+    public static readonly TimeSpan MinimumAuctionDuration = TimeSpan.FromHours(1);
+    public const decimal MinimumBidIncrementPercentage = 0.05m;
+    // Centralized configuration for business rules
+}
+```
+
+#### Enhanced Auction Settings
+```csharp
+public sealed class AuctionSettings : ValueObject
+{
+    public Money? BuyNowPrice { get; }      // Immediate purchase option
+    public Money? MinimumBidIncrement { get; } // Anti-spam protection
+    public bool AllowAutoBidding { get; }   // Proxy bidding support
+}
+```
+
+#### Soft Delete Pattern
+```csharp
+public class Listing : Entity<ListingId>
+{
+    public DateTime? DeletedAt { get; private set; }
+    public bool IsDeleted => DeletedAt.HasValue;
+    
+    public void SoftDelete();  // Maintains audit trail
+    public void Restore();      // Recovery capability
+}
+```
+
+#### Specification Pattern
+```csharp
+// Composable business rules
+public abstract class Specification<T> : ISpecification<T>
+{
+    public Specification<T> And(ISpecification<T> specification);
+    public Specification<T> Or(ISpecification<T> specification);
+    public Specification<T> Not();
+}
+
+// Usage: Find active listings near location
+var spec = new ActiveListingSpecification()
+    .And(new ListingNearLocationSpecification(userLocation, 10));
+```
+
+#### Repository with Spatial Queries
+```csharp
+public interface IListingRepository
+{
+    // PostGIS spatial queries
+    Task<IEnumerable<Listing>> GetNearbyListingsAsync(
+        Location center, double radiusKm, CancellationToken ct);
+    
+    Task<IEnumerable<Listing>> GetListingsInBoundingBoxAsync(
+        double minLat, double minLon, double maxLat, double maxLon, CancellationToken ct);
+}
+```
+
+## Enterprise-Grade Architectural Patterns
+
+### ValidationBehavior Pipeline
+Integrated MediatR pipeline behavior for comprehensive request validation:
+```csharp
+// Automatically validates all commands/queries using FluentValidation
+public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+{
+    // Handles Result<T> pattern integration
+    // Converts validation failures to consistent error responses
+    // Registered in Program.cs: AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>))
+}
+```
+
+### Global Exception Handling
+Centralized exception management with ProblemDetails standard:
+```csharp
+// GlobalExceptionMiddleware handles all unhandled exceptions
+app.UseMiddleware<GlobalExceptionMiddleware>();
+```
+- Environment-specific error detail exposure
+- Structured validation error responses
+- Consistent error format across all APIs
+- Security-conscious error information in production
+
+### Result Pattern Implementation
+Consistent error handling without exceptions for business logic:
+```csharp
+public async Task<Result<ItemDto>> Handle(CreateItemCommand request, CancellationToken cancellationToken)
+{
+    // Returns Result.Success(value) or Result.Failure(errorMessage)
+    // Eliminates throw/catch for business rule violations
+    // Provides explicit success/failure semantics
+}
+```
+
+### JWT Authentication Configuration
+Flexible authentication supporting both Keycloak and symmetric keys:
+```csharp
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        // Production: Keycloak authority-based validation
+        // Development: Symmetric key validation for testing
+        // Comprehensive token validation parameters
+    });
+```
+
+### CORS Security Hardening
+Production-ready CORS configuration:
+```csharp
+// Configurable allowed origins from appsettings
+// Method and header restrictions
+// Preflight caching optimization
+policy.WithOrigins(allowedOrigins)
+      .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+      .WithHeaders("Content-Type", "Authorization", "Accept", "X-Requested-With")
+      .AllowCredentials()
+      .SetPreflightMaxAge(TimeSpan.FromHours(1));
+```
+
+### Repository Pattern Optimizations
+Performance-optimized data access patterns:
+```csharp
+// Selective loading to prevent N+1 queries
+Task<Item?> GetByIdAsync(ItemId id, bool includeImages, CancellationToken cancellationToken);
+
+// Parallel query execution for pagination
+var countTask = baseQuery.CountAsync(cancellationToken);
+var itemsTask = baseQuery.Skip().Take().Include().ToListAsync(cancellationToken);
+await Task.WhenAll(countTask, itemsTask);
+```
+
+### Transaction Management
+Robust transaction handling with proper rollback:
+```csharp
+await _unitOfWork.BeginTransactionAsync(cancellationToken);
+try
+{
+    // Business operations
+    await _unitOfWork.CommitTransactionAsync(cancellationToken);
+}
+catch
+{
+    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+    throw;
+}
+```
+
+### API Security and Validation
+DoS protection through parameter validation:
+```csharp
+[FromQuery][Range(1, 1000, ErrorMessage = "Page number must be between 1 and 1000")] int pageNumber = 1,
+[FromQuery][Range(1, 100, ErrorMessage = "Page size must be between 1 and 100")] int pageSize = 10
+```
+
 ## Service-Specific Configurations
 
 ### User Service
@@ -295,6 +474,71 @@ dotnet ef migrations script --project src/Services/User.API
 4. **HTTPS only** - Enforce HTTPS in production
 5. **Rate limiting** - Implement per-user rate limiting
 6. **CORS configuration** - Configure appropriately for frontend
+
+## Backend Commit Strategy
+
+### Commit Granularity for Services
+
+When implementing a new microservice, follow this commit pattern:
+
+#### Day 1: Domain Layer
+```bash
+git commit -m "feat: Add [Service] aggregate with business rules"
+git commit -m "feat: Add [Service] value objects and domain events"
+git commit -m "test: Add [Service] domain unit tests"
+```
+
+#### Day 2: Application Layer
+```bash
+git commit -m "feat: Add [Service] CQRS commands and handlers"
+git commit -m "feat: Add [Service] queries and projections"
+git commit -m "test: Add [Service] application layer tests"
+```
+
+#### Day 3: Infrastructure Layer
+```bash
+git commit -m "feat: Add [Service] repository with EF Core"
+git commit -m "feat: Add [Service] database migrations"
+git commit -m "test: Add [Service] integration tests with TestContainers"
+```
+
+#### Day 4: API Layer
+```bash
+git commit -m "feat: Add [Service] API controller with endpoints"
+git commit -m "feat: Add [Service] OpenAPI documentation"
+git commit -m "test: Add [Service] API integration tests"
+```
+
+### Testing Requirements Per Commit
+- Domain commits: Include unit tests in same commit
+- Application commits: Include handler tests
+- Infrastructure commits: Include integration tests
+- API commits: Include controller and E2E tests
+- **Target**: 100% coverage for new code in each commit
+
+### Example Week 2 Commits (Product & Listing)
+```bash
+# Day 1
+feat: Add Product aggregate with specifications pattern
+feat: Add Category aggregate with hierarchical structure
+
+# Day 2
+feat: Add Product CQRS commands and handlers
+feat: Add Product search queries with filtering
+
+# Day 3
+feat: Add Product repository with EF Core
+feat: Add Elasticsearch product indexing
+
+# Day 4
+feat: Add Listing aggregate with auction types
+feat: Add Listing CQRS operations
+
+# Day 5
+feat: Add Products API controller
+feat: Add Listings API controller
+feat: Add PostGIS geospatial search
+```
 
 ## Getting Started Checklist
 

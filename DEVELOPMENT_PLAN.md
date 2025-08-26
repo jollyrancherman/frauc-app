@@ -2,21 +2,21 @@
 ## TDD-Driven Development with Full CI/CD Pipeline
 
 ### 📋 Current Status
-**Project Phase**: Week 1 - Authentication & User Management  
-**Current Sprint**: Day 1-2 Infrastructure & TDD Setup ✅ **COMPLETED**  
-**Next Sprint**: Day 3-5 User Profile Service (TDD)  
+**Project Phase**: Week 2 - Product & Listing Services  
+**Current Sprint**: Product & Listing Backend (TDD)  
+**Branch**: `feature/week2-product-listing-services`  
 **GitHub Repository**: [frauc-app](https://github.com/jollyrancherman/frauc-app)  
-**Last Updated**: August 23, 2025
+**Last Updated**: August 24, 2025
 
 **Completed Milestones**:
-- ✅ Docker Compose development environment
-- ✅ .NET 9 microservices solution structure  
-- ✅ xUnit test projects and TestContainers setup
-- ✅ Keycloak authentication infrastructure
+- ✅ Week 1: Complete User Profile Service with 100% test coverage
+- ✅ Docker Compose development environment with all services
+- ✅ .NET 9 microservices solution structure with DDD
+- ✅ Keycloak authentication fully integrated
 - ✅ GitHub repository with CI/CD workflows
 - ✅ PostgreSQL 17 with PostGIS and Redis caching
 
-**Current Focus**: Ready to begin User Profile Service implementation with TDD methodology
+**Current Focus**: Week 2 - Product & Listing Services implementation with TDD methodology
 
 ---
 
@@ -91,6 +91,84 @@ frauc-marketplace/
 
 ---
 
+## 🔧 Git Commit Strategy
+
+### Commit Granularity Guidelines
+**Principle**: One commit per logical component - each commit should represent a complete, working piece of functionality that builds and passes tests.
+
+#### Backend Commits (per service)
+1. **Domain Layer**: 1 commit per aggregate
+   - Example: `feat: Add Product aggregate with domain logic`
+   - Include value objects and domain events
+   - Include domain unit tests in same commit
+
+2. **Application Layer**: 1 commit per use case group
+   - Example: `feat: Add Product CQRS commands and handlers`
+   - Include validators and mappings
+   - Include application tests
+
+3. **Infrastructure Layer**: 1 commit per major component
+   - Example: `feat: Add Product repository with EF Core`
+   - Include database configurations
+   - Include integration tests
+
+4. **API Layer**: 1 commit per controller
+   - Example: `feat: Add Products API controller with endpoints`
+   - Include OpenAPI documentation
+   - Include controller tests
+
+#### Frontend Commits (per feature)
+1. **Setup & Configuration**: 1-2 commits for initial setup
+   - Example: `feat: Initialize NextJS 15 with App Router`
+   - Example: `feat: Configure Jest and React Testing Library`
+
+2. **Components**: 1 commit per major component group
+   - Example: `feat: Add authentication components with tests`
+   - Include component tests
+   - Include Storybook stories if applicable
+
+3. **Pages**: 1 commit per page/route
+   - Example: `feat: Add user profile page with CRUD operations`
+   - Include page tests
+   - Include E2E tests if applicable
+
+4. **State Management**: 1 commit per feature slice
+   - Example: `feat: Add user authentication context and hooks`
+   - Include hook tests
+
+### Commit Message Format
+```
+type(scope): subject
+
+body (optional)
+
+footer (optional)
+```
+
+**Types**:
+- `feat`: New feature
+- `fix`: Bug fix
+- `test`: Adding or updating tests
+- `refactor`: Code change that neither fixes a bug nor adds a feature
+- `docs`: Documentation only changes
+- `style`: Code style changes (formatting, etc.)
+- `perf`: Performance improvements
+- `chore`: Maintenance tasks
+
+### Testing Requirements
+- ✅ Every commit MUST build successfully
+- ✅ Every commit MUST have passing tests
+- ✅ Every commit MUST maintain 100% coverage for touched code
+- ✅ Integration tests included where applicable
+
+### Branch Strategy
+- `main`: Production-ready code only
+- `feature/*`: Feature branches (e.g., `feature/week2-product-listing-services`)
+- `bugfix/*`: Bug fix branches
+- `hotfix/*`: Emergency production fixes
+
+---
+
 ## 📋 Development Approach: Vertical Slices
 
 ### Section 1: Authentication & User Management (Weeks 1-2)
@@ -147,52 +225,74 @@ frauc-marketplace/
 
 ---
 
-### Section 2: Basic Listing Creation (Weeks 3-4)
-**Goal**: Product catalog and listing management
+### Section 2: Item & Listing Services (Weeks 2-3)
+**Goal**: Item and listing management with 5 listing types and geospatial features
 
-#### Week 3: Product & Listing Backend (TDD)
-- [ ] **Day 1-2: Product Domain (TDD)**
-  - [ ] **RED**: Product aggregate tests
-  - [ ] **GREEN**: Product domain with categories/specs
-  - [ ] **REFACTOR**: Product validation and rules
-  - [ ] Image upload service with mock/integration tests
-  - [ ] Category management with full coverage
-  - [ ] **Test Coverage Target**: Product Service 100%
+#### Week 2: Item & Listing Backend (TDD) 🚧 **CURRENT SPRINT**
+- [ ] **Day 1: Item & Category Domain (TDD)**
+  - [ ] **Morning**: Item aggregate with image management
+  - [ ] **Afternoon**: Category aggregate with hierarchical structure
+  - [ ] **Commit 1**: `feat: Add Item aggregate with image management`
+  - [ ] **Commit 2**: `feat: Add Category aggregate with hierarchical structure`
+  - [ ] **Test Coverage Target**: Domain layer 100%
 
-- [ ] **Day 3-5: Listing Service (TDD)**
-  - [ ] **RED**: Listing aggregate and lifecycle tests
-  - [ ] **GREEN**: Listing CRUD with state management
-  - [ ] **REFACTOR**: Clean listing domain design
-  - [ ] PostGIS integration with spatial tests
-  - [ ] PostgreSQL full-text search with performance tests
-  - [ ] **Test Coverage Target**: Listing Service 100%
+- [ ] **Day 2: Item Application Layer (TDD)**
+  - [ ] **Morning**: Item CQRS commands (Create, Update, AddImage)
+  - [ ] **Afternoon**: Item queries (GetById, GetBySeller, GetByCategory)
+  - [ ] **Commit 3**: `feat: Add Item CQRS commands and handlers`
+  - [ ] **Commit 4**: `feat: Add Item queries with category filtering`
+  - [ ] **Test Coverage Target**: Application layer 100%
 
-**Week 3 Deliverables**:
-- ✅ Product and listing APIs
-- ✅ 100% backend test coverage
-- ✅ Performance benchmarks established
+- [ ] **Day 3: Item Infrastructure & Listing Domain (TDD)**
+  - [ ] **Morning**: Item repository with EF Core
+  - [ ] **Afternoon**: Listing aggregate with 5 types and PostGIS location
+  - [ ] **Commit 5**: `feat: Add Item repository with EF Core`
+  - [ ] **Commit 6**: `feat: Add Listing aggregate with 5 types and PostGIS location`
+  - [ ] **Test Coverage Target**: Infrastructure layer 100%
 
-#### Week 4: Listing Frontend (Component TDD)
-- [ ] **Day 1-3: Create Listing Flow**
-  - [ ] **RED**: Multi-step wizard component tests
-  - [ ] **GREEN**: Listing creation with form validation
+- [ ] **Day 4: Listing Application & Infrastructure (TDD)**
+  - [ ] **Morning**: Listing CQRS with 5 listing type support
+  - [ ] **Afternoon**: PostGIS spatial queries for location-based search
+  - [ ] **Commit 7**: `feat: Add Listing CQRS with 5 listing type support`
+  - [ ] **Commit 8**: `feat: Add PostGIS spatial queries for location-based search`
+  - [ ] **Test Coverage Target**: Listing domain/app 100%
+
+- [ ] **Day 5: API & Todo Service Integration (TDD)**
+  - [ ] **Morning**: Items and Listings API controllers with spatial search
+  - [ ] **Afternoon**: Todo Service with Redis caching and event-driven updates
+  - [ ] **Commit 9**: `feat: Add Items API controller with image upload`
+  - [ ] **Commit 10**: `feat: Add Listings API controller with PostGIS search`
+  - [ ] **Commit 11**: `feat: Add Todo Service with Redis caching and event-driven updates`
+  - [ ] **Test Coverage Target**: API layer 100%
+
+**Week 2 Deliverables**:
+- ✅ Complete Item and Listing services backend with 5 listing types
+- ✅ 100% test coverage across all layers
+- ✅ PostGIS spatial search and Todo Service integration
+- ✅ ~11 focused commits following Git strategy
+
+#### Week 3: Item & Listing Frontend (Component TDD)
+- [ ] **Day 1-3: Create Item & Listing Flow**
+  - [ ] **RED**: Multi-step wizard component tests for 5 listing types
+  - [ ] **GREEN**: Item creation with listing type selection
   - [ ] **REFACTOR**: Reusable form components
   - [ ] Image upload with drag-and-drop tests
-  - [ ] Geographic location picker tests
+  - [ ] Geographic location picker with PostGIS integration
   - [ ] **Test Coverage Target**: Creation flow 100%
 
-- [ ] **Day 4-5: Browse & View Listings**
-  - [ ] **RED**: Listing grid and detail component tests
-  - [ ] **GREEN**: Infinite scroll with filtering
+- [ ] **Day 4-5: Browse & View Items/Listings**
+  - [ ] **RED**: Listing grid component tests with 5 types
+  - [ ] **GREEN**: Location-based search with radius selection
   - [ ] **REFACTOR**: Optimized listing components
-  - [ ] SEO optimization with meta tag tests
+  - [ ] Todo dashboard components (web prominent, mobile stats)
   - [ ] Mobile responsiveness tests
   - [ ] **Test Coverage Target**: Browse/view 100%
 
-**Week 4 Deliverables**:
-- ✅ Complete listing CRUD experience
+**Week 3 Deliverables**:
+- ✅ Complete item/listing CRUD experience with 5 types
+- ✅ Location-based search with PostGIS
+- ✅ Todo management interface
 - ✅ 100% frontend test coverage
-- ✅ SEO and performance optimized
 
 ---
 
