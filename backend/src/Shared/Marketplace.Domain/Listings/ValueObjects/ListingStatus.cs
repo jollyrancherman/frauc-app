@@ -25,5 +25,18 @@ public enum ListingStatus
     /// <summary>
     /// Listing has been suspended by admin
     /// </summary>
-    Suspended
+    Suspended,
+
+    /// <summary>
+    /// Listing is in draft mode before publishing
+    /// </summary>
+    Draft
+}
+
+public static class ListingStatusExtensions
+{
+    public static bool In(this ListingStatus status, params ListingStatus[] statuses)
+    {
+        return statuses.Contains(status);
+    }
 }

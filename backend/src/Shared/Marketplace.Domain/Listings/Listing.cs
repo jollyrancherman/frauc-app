@@ -12,7 +12,8 @@ public class Listing : Entity<ListingId>
     public UserId SellerId { get; private set; }
     public string Title { get; private set; }
     public string Description { get; private set; }
-    public Location Location { get; private set; }
+    public ValueObjects.Location Location { get; private set; }
+    public SpatialPoint SpatialPoint { get; private set; } // Domain spatial abstraction
     public CategoryId CategoryId { get; private set; }
     public ListingType ListingType { get; private set; }
     public ListingStatus Status { get; private set; }
@@ -35,7 +36,7 @@ public class Listing : Entity<ListingId>
         UserId sellerId,
         string title,
         string description,
-        Location location,
+        ValueObjects.Location location,
         CategoryId categoryId,
         ListingType listingType,
         Money currentPrice,
@@ -50,6 +51,7 @@ public class Listing : Entity<ListingId>
         Title = title;
         Description = description;
         Location = location;
+        SpatialPoint = SpatialPoint.FromLocation(location);
         CategoryId = categoryId;
         ListingType = listingType;
         Status = ListingStatus.Active;
@@ -69,7 +71,7 @@ public class Listing : Entity<ListingId>
         UserId sellerId,
         string title,
         string description,
-        Location location,
+        ValueObjects.Location location,
         CategoryId categoryId)
     {
         return new Listing(
@@ -92,7 +94,7 @@ public class Listing : Entity<ListingId>
         UserId sellerId,
         string title,
         string description,
-        Location location,
+        ValueObjects.Location location,
         CategoryId categoryId,
         TimeSpan auctionDuration)
     {
@@ -117,7 +119,7 @@ public class Listing : Entity<ListingId>
         UserId sellerId,
         string title,
         string description,
-        Location location,
+        ValueObjects.Location location,
         CategoryId categoryId,
         Money startingPrice,
         Money? reservePrice,
@@ -146,7 +148,7 @@ public class Listing : Entity<ListingId>
         UserId sellerId,
         string title,
         string description,
-        Location location,
+        ValueObjects.Location location,
         CategoryId categoryId,
         Money maxPrice,
         TimeSpan duration)
@@ -174,7 +176,7 @@ public class Listing : Entity<ListingId>
         UserId sellerId,
         string title,
         string description,
-        Location location,
+        ValueObjects.Location location,
         CategoryId categoryId,
         Money price)
     {
@@ -209,12 +211,36 @@ public class Listing : Entity<ListingId>
         AddDomainEvent(new ListingConvertedToAuctionEvent(Id, firstBidAmount));
     }
 
-    public void UpdateLocation(Location newLocation)
+    public void UpdateTitle(string newTitle)
     {
-        if (Status != ListingStatus.Active)
+        ValidateTitle(newTitle);
+        if (Status != ListingStatus.Active && Status != ListingStatus.Draft)
+            throw new InvalidOperationException("Cannot update title of inactive listing");
+
+        Title = newTitle;
+        UpdatedAt = DateTime.UtcNow;
+        AddDomainEvent(new ListingUpdatedEvent(Id));
+    }
+
+    public void UpdateDescription(string newDescription)
+    {
+        ValidateDescription(newDescription);
+        if (Status != ListingStatus.Active && Status != ListingStatus.Draft)
+            throw new InvalidOperationException("Cannot update description of inactive listing");
+
+        Description = newDescription;
+        UpdatedAt = DateTime.UtcNow;
+        AddDomainEvent(new ListingUpdatedEvent(Id));
+    }
+
+    public void UpdateLocation(ValueObjects.Location newLocation)
+    {
+        if (Status != ListingStatus.Active && Status != ListingStatus.Draft)
             throw new InvalidOperationException("Cannot update location of inactive listing");
 
         Location = newLocation;
+        SpatialPoint = SpatialPoint.FromLocation(newLocation);
+        UpdatedAt = DateTime.UtcNow;
         AddDomainEvent(new ListingLocationUpdatedEvent(Id, newLocation));
     }
 

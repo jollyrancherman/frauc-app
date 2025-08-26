@@ -27,3 +27,13 @@ public enum ListingType
     /// </summary>
     FixedPrice
 }
+
+public static class ListingTypeExtensions
+{
+    public static bool IsAuction(this ListingType type)
+    {
+        return type == ListingType.ForwardAuction || 
+               type == ListingType.ReverseAuction || 
+               type == ListingType.FreeToAuction;
+    }
+}

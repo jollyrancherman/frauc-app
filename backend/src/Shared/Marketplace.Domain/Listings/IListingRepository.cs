@@ -46,4 +46,36 @@ public interface IListingRepository
         ListingType? type = null,
         ListingStatus? status = null,
         CancellationToken cancellationToken = default);
+
+    // Advanced query methods
+    Task<(IEnumerable<Listing> Listings, int TotalCount)> GetListingsBySellerAsync(
+        UserId sellerId,
+        int pageNumber,
+        int pageSize,
+        ListingStatus? status = null,
+        ListingType? type = null,
+        CancellationToken cancellationToken = default);
+
+    Task<(IEnumerable<Listing> Listings, int TotalCount)> GetListingsByCategoryAsync(
+        CategoryId categoryId,
+        int pageNumber,
+        int pageSize,
+        ListingStatus? status = null,
+        ListingType? type = null,
+        CancellationToken cancellationToken = default);
+
+    Task<(IEnumerable<Listing> Listings, int TotalCount)> SearchListingsAsync(
+        string? searchTerm,
+        CategoryId? categoryId,
+        Location? center,
+        double? radiusKm,
+        Money? minPrice,
+        Money? maxPrice,
+        ListingType? type,
+        ListingStatus? status,
+        int pageNumber,
+        int pageSize,
+        string sortBy,
+        string sortDirection,
+        CancellationToken cancellationToken = default);
 }
